@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Process_Funcs.h"
+#include "process_funcs.h"
+
 void displayProcess(const struct Process *p) {
     printf("ID: %d\n", p->id);
     printf("Arrival Time: %d\n", p->arrival);
@@ -12,6 +13,7 @@ void displayProcess(const struct Process *p) {
     printf("State: %s\n", p->state);
 }
 void initProcess(struct Process *p, int id, int arrival, int runtime, int priority, int WaitingTime, int remainingTime, const char *state) {
+    p = malloc(sizeof(struct Process));
     p->id = id;
     p->arrival = arrival;
     p->runtime = runtime;
@@ -20,21 +22,21 @@ void initProcess(struct Process *p, int id, int arrival, int runtime, int priori
     p->remainingTime = remainingTime;
     strcpy(p->state, state);
 }
+
 void readProcessesFromFile(char *filename, struct Process **processes, int* numProcesses) {
-    FILE* file=fopen(filename,"r");;
+    FILE* file = fopen(filename,"r");;
     char line[100];
     *numProcesses = 0;
     while (fgets(line, sizeof(line), file)) {
         (*numProcesses)++;
     }
-    *processes = malloc(*numProcesses * sizeof(struct Process));
+    processes = malloc(*numProcesses * sizeof(struct Process));
     int index = 0;
     fseek(file, 0, SEEK_SET);
     while (fgets(line, sizeof(line), file)) {
         int id, arrival, runtime, priority;
         sscanf(line, "%d %d %d %d", &id, &arrival, &runtime, &priority);
-        initProcess(&(*processes)[index], id, arrival, runtime, priority, 0, runtime, "started");
-
+        initProcess(processes[index], id, arrival, runtime, priority, 0, runtime, "started");
         index++;
     }
 

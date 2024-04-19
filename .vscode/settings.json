@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "process_funcs.h": "c",
+    "headers.h": "c",
+    "types.h": "c"
+  }
+}

@@ -1,0 +1,5 @@
+make clean
+make build
+./test_generator.out
+3
+./process_generator.out

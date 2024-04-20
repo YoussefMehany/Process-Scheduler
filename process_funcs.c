@@ -13,7 +13,6 @@ void displayProcess(const struct Process *p) {
     printf("State: %s\n", p->state);
 }
 void initProcess(struct Process *p, int id, int arrival, int runtime, int priority, int WaitingTime, int remainingTime, const char *state) {
-    p = malloc(sizeof(struct Process));
     p->id = id;
     p->arrival = arrival;
     p->runtime = runtime;
@@ -30,12 +29,12 @@ void readProcessesFromFile(char *filename, struct Process **processes, int* numP
     while (fgets(line, sizeof(line), file)) {
         (*numProcesses)++;
     }
-    processes = malloc(*numProcesses * sizeof(struct Process));
     int index = 0;
     fseek(file, 0, SEEK_SET);
     while (fgets(line, sizeof(line), file)) {
         int id, arrival, runtime, priority;
         sscanf(line, "%d %d %d %d", &id, &arrival, &runtime, &priority);
+        processes[index] = malloc(sizeof(struct Process));
         initProcess(processes[index], id, arrival, runtime, priority, 0, runtime, "started");
         index++;
     }

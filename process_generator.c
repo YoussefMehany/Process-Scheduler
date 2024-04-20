@@ -13,7 +13,7 @@ int main(int argc, char * argv[])
     // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
     // 3. Initiate and create the scheduler and clock processes.
     // 4. Use this function after creating the clock process to initialize clock
-    Process** processes;
+    Process** processes = malloc(100 * sizeof(struct Process));
     int numProcesses = 0;
     readProcessesFromFile("processes.txt", processes, &numProcesses);
     initiateScheduler();
@@ -23,6 +23,10 @@ int main(int argc, char * argv[])
     // TODO Generation Main Loop
     // 5. Create a data structure for processes and provide it with its parameters.
     // 6. Send the information to the scheduler at the appropriate time.
+    for(int i = 0; i < numProcesses; i++) {
+        printf("Process %d\n", i);
+        displayProcess(processes[i]);
+    }
     while(true) {
         int currentTime = getClk();
         for (int i = 0; i < numProcesses; i++) {

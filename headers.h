@@ -45,6 +45,7 @@ void initClk()
         sleep(1);
         shmid = shmget(SHKEY, 4, 0444);
     }
+    printf("clock initialized successfully \n");
     shmaddr = (int *) shmat(shmid, (void *)0, 0);
 }
 

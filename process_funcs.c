@@ -12,6 +12,17 @@ void displayProcess(const struct Process *p) {
     printf("Remaining Time: %d\n", p->remainingTime);
     printf("State: %s\n", p->state);
 }
+int GetNumProcesses (char *filename)
+{
+
+    FILE* file = fopen(filename,"r");;
+    char line[100];
+    int numProcesses = -1;
+    while (fgets(line, sizeof(line), file)) {
+        numProcesses++;
+    }
+    return numProcesses;
+}
 void initProcess(struct Process *p, int id, int arrival, int runtime, int priority, int WaitingTime, int remainingTime, const char *state) {
     p->id = id;
     p->arrival = arrival;
@@ -20,17 +31,15 @@ void initProcess(struct Process *p, int id, int arrival, int runtime, int priori
     p->WaitingTime = WaitingTime;
     p->remainingTime = remainingTime;
     strcpy(p->state, state);
+    p->Sent=0;
 }
 
-void readProcessesFromFile(char *filename, struct Process **processes, int* numProcesses) {
+void readProcessesFromFile(char *filename, struct Process **processes) {
     FILE* file = fopen(filename,"r");;
     char line[100];
-    *numProcesses = 0;
-    while (fgets(line, sizeof(line), file)) {
-        (*numProcesses)++;
-    }
     int index = 0;
     fseek(file, 0, SEEK_SET);
+    fgets(line, sizeof(line), file);
     while (fgets(line, sizeof(line), file)) {
         int id, arrival, runtime, priority;
         sscanf(line, "%d %d %d %d", &id, &arrival, &runtime, &priority);

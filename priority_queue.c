@@ -28,18 +28,28 @@ void heapify(Heap* heap, int idx) {
     }
 }
 
-void push(Heap* heap, Process* newProcess) {
+void push(Heap* heap, Process* newProcess,int ispiriority) {
     if (heap->N + 1 >= heap->capacity) {
         resize(heap);
     }
     (heap->N)++;
     heap->tree[heap->N] = newProcess;
     int current = heap->N;
-    while (current > 1 && heap->tree[current]->remainingTime < heap->tree[current / 2]->remainingTime) {
-        Process* temp = heap->tree[current];
-        heap->tree[current] = heap->tree[current / 2];
-        heap->tree[current / 2] = temp;
-        current /= 2;
+    if(!ispiriority){
+        while (current > 1 && heap->tree[current]->remainingTime < heap->tree[current / 2]->remainingTime) {
+            Process* temp = heap->tree[current];
+            heap->tree[current] = heap->tree[current / 2];
+            heap->tree[current / 2] = temp;
+            current /= 2;
+        }
+    }
+    else{
+        while (current > 1 && heap->tree[current]->priority < heap->tree[current / 2]->priority) {
+            Process* temp = heap->tree[current];
+            heap->tree[current] = heap->tree[current / 2];
+            heap->tree[current / 2] = temp;
+            current /= 2;
+        }
     }
 }
 

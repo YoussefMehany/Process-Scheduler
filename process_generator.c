@@ -17,6 +17,11 @@
 
 int pid_Scheduler;
 
+struct msgbuf {
+    long mtype;
+    char mtext[30];
+};
+
 struct finish_message_pg {
     long mtype;    
     int finish;   
@@ -25,10 +30,12 @@ struct finish_message_pg {
 void clearResources(int);
 void initiateScheduler();
 void initiateClkProcess();
-void SendProcesses(Process* process);
+void sendProcess(Process* process);
 void send_finish_pg(int f);
 void rec_finish_scheduler();
 void handler(int signum);
+char* processToString(Process *process);
+
 
 
 int main(int argc, char * argv[])
@@ -38,29 +45,29 @@ int main(int argc, char * argv[])
     initiateClkProcess();
     initClk();
     int numProcesses = GetNumProcesses("processes.txt");
-    int cont=1;
+    int waitSend = 1;
     Process** processes = malloc(numProcesses * sizeof(struct Process));
     readProcessesFromFile("processes.txt", processes);
-    while(cont) {
+    while(waitSend) {
         int currentTime = getClk();
-        for (int i=0; i < numProcesses; i++) {
-            if (processes[i]->arrival == currentTime&&processes[i]->Sent==0) {
-                SendProcesses(processes[i]);
-                processes[i]->Sent=1;
+        for (int i = 0; i < numProcesses; i++) {
+            if (processes[i]->arrival <= currentTime && processes[i]->Sent == 0) {
+                sendProcess(processes[i]);
+                processes[i]->Sent = 1;
             }
         }
-        // for (int i=0; i < numProcesses; i++) {
-        //     if (processes[i]->Sent==0) {
-        //         send_finish_pg(0);
-        //         break;
-        //     }
-        //     if(i==numProcesses-1){
-        //         send_finish_pg(1);
-        //         cont=0;
-        //     }
-        // }
+        for (int i = 0; i < numProcesses; i++) {
+            if (processes[i]->Sent == 0) {
+                send_finish_pg(0);
+                break;
+            }
+            if(i == numProcesses - 1) {
+                send_finish_pg(1);
+                waitSend = 0;
+            }
+        }
     }
-    // rec_finish_scheduler();
+    rec_finish_scheduler();
     // TODO Initialization
     // 1. Read the input files.
     // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
@@ -86,7 +93,7 @@ void handler(int signum)
 void initiateScheduler()
 {
     pid_t pid = fork();
-    pid_Scheduler=pid;
+    pid_Scheduler = pid;
 
     if (pid == -1) {
         perror("fork");
@@ -119,29 +126,40 @@ void clearResources(int signum)
     //TODO Clears all resources in case of interruption
 }
 
-void SendProcesses(Process* process)
-{
-    //printf("sending signal to %d \n",schedulerId);
+char *processToString(Process *process) {
+    char *str = malloc(30 * sizeof(char));
+    sprintf(str, "%d %d %d %d %d %d %d %s", process->id, process->arrival, process->startTime, process->runtime, process->priority, process->WaitingTime, process->remainingTime, process->state);
+    return str;
+}
+
+void sendProcess(Process *process) {
     key_t key;
     int msgid;
+    struct msgbuf buffer;
+    char *processStr = processToString(process);
+
     key = ftok("keyfile", 'A');
     if (key == -1) {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
+
     msgid = msgget(key, 0666 | IPC_CREAT);
     if (msgid == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
-
-    process->mtype=1;
-    if (msgsnd(msgid, process, sizeof(struct Process) - sizeof(long), 0) == -1) {
+    printf("Sending process: %s\n", processStr);
+    memset(&buffer, 0, sizeof(buffer));
+    strncpy(buffer.mtext, processStr, sizeof(buffer.mtext) - 1);
+    buffer.mtype = 5;
+    if (msgsnd(msgid, &buffer, sizeof(buffer.mtext), 0) == -1) {
         perror("msgsnd");
         exit(EXIT_FAILURE);
     }
-    kill(pid_Scheduler,SIGUSR1);
 
+    kill(pid_Scheduler, SIGUSR1);
+    free(processStr);
 }
 
 void send_finish_pg(int f){
@@ -159,8 +177,8 @@ void send_finish_pg(int f){
     }
     struct finish_message_pg fm;
     
-    fm.mtype=1;
-    fm.finish=f;
+    fm.mtype = 1;
+    fm.finish = f;
     if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
         perror("msgsnd");
         exit(EXIT_FAILURE);
@@ -184,7 +202,7 @@ void rec_finish_scheduler()
         exit(EXIT_FAILURE);
     }
 
-    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1,!IPC_NOWAIT ) == -1) {
+    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
         perror("msgrcv");
         exit(EXIT_FAILURE);
     }

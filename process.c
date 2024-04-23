@@ -11,20 +11,18 @@ int remainingtime;
 int main(int agrc, char * argv[])
 {
     initClk();
-    int currenttime = getClk();
+    int currentTime = getClk();
 
     remainingtime = atoi(argv[1]);
     //TODO it needs to get the remaining time from somewhere
     //remainingtime = ??;
-    while (remainingtime > 0)
-    {
-        if(getClk()!=currenttime) {
+    while (remainingtime > 0) {
+        if(getClk() > currentTime) {
             remainingtime--;
-            currenttime = getClk();
+            currentTime = getClk();
         }
-        // remainingtime = ??;
     }
-    kill(getppid(),SIGUSR2);
+    kill(getppid(), SIGUSR2);
     destroyClk(false);
     
     return 0;

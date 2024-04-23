@@ -2,7 +2,6 @@
 #define PROCESS_H
 
 typedef struct Process {
-    long mtype;
     int id;
     int arrival;
     int startTime;

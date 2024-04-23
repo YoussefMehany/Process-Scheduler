@@ -4,6 +4,7 @@
 #include "process_funcs.h"
 
 void displayProcess(const struct Process *p) {
+    if(!p) return;
     printf("ID: %d\n", p->id);
     printf("Arrival Time: %d\n", p->arrival);
     printf("Start Time: %d\n", p->startTime);
@@ -25,6 +26,7 @@ int GetNumProcesses (char *filename)
     return numProcesses;
 }
 void initProcess(struct Process *p, int id, int arrival, int starttime, int runtime, int priority, int WaitingTime, int remainingTime, const char *state) {
+    if(!p) return;
     p->id = id;
     p->arrival = arrival;
     p->startTime= starttime;
@@ -32,8 +34,8 @@ void initProcess(struct Process *p, int id, int arrival, int starttime, int runt
     p->priority = priority;
     p->WaitingTime = WaitingTime;
     p->remainingTime = remainingTime;
+    p->Sent = 0;
     strcpy(p->state, state);
-    p->Sent=0;
 }
 
 void readProcessesFromFile(char *filename, struct Process **processes) {

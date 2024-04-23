@@ -16,6 +16,8 @@ all: clean build
 run:
 	./process_generator.out
 
+runv:
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./process_generator.out
 c:
 	ipcrm -a
 	clear

@@ -25,7 +25,6 @@ Heap *pr_que;
 int is_finish_pg = 0; //0 -> not finish  / 1->finish
 
 void RecieveProcesses();
-void rec_handle(int signum);
 void HPF(int r);
 // void send_process_torun(Process* process);
 void rec_finish_pg();
@@ -35,7 +34,7 @@ void handler2();
 
 int main(int argc, char * argv[])
 {
-    signal(SIGUSR1, rec_handle);
+    signal(SIGUSR1, RecieveProcesses);
     signal(SIGUSR2, handler2);
     initClk();
     //printf("from it self is %d \n",getpid());
@@ -43,20 +42,18 @@ int main(int argc, char * argv[])
     Process* running_proc=NULL;
     while(1){
         // if(!is_finish_pg) rec_finish_pg();
-        // if(is_finish_pg )break;
-        if(peak(pr_que)!=NULL){
-            running_proc = peak(pr_que);
-            displayProcess(running_proc);
-            pop(pr_que,1);
-            // if(running_proc != peak(pr_que)) 
-            // {
-            //     running_proc = peak(pr_que);
-            //     displayProcess(running_proc);
-            //     pop(pr_que,1);
-            //     // strcpy(running_proc->state,"Running");
-            //     // running_proc->startTime = getClk();
-            //     // HPF(running_proc->remainingTime);
-            // }
+        // if(is_finish_pg && isEmpty(pr_que))break;
+        if(!isEmpty(pr_que)){
+            Process* temp = peak(pr_que);
+            if(&running_proc != &temp) 
+            {
+                running_proc = temp;
+                // displayProcess(running_proc);
+                // pop(pr_que,1);
+                HPF(running_proc->remainingTime);
+                strcpy(running_proc->state,"Running");
+                running_proc->startTime = getClk();
+            }
         }
 
     }
@@ -87,9 +84,10 @@ void HPF(int r)
 
 void handler2()
 {
-    Process* p = peak(pr_que);
-    strcpy(p->state,"finished");
-    displayProcess(p);
+    //Process* p = peak(pr_que);
+    //strcpy(p->state,"finished");
+    //p->remainingTime = 0;
+    displayProcess(peak(pr_que));
     pop(pr_que,1);
 
 }
@@ -144,12 +142,6 @@ void RecieveProcesses()
    //displayProcess(p);
    push(pr_que,p,1);
 
-}
-
-void rec_handle(int signum)
-{
-	RecieveProcesses();
-  //printf("signal received \n");
 }
 
 

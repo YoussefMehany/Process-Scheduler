@@ -1,5 +1,5 @@
 build:
-	gcc process_generator.c priority_queue.c process_funcs.c -o process_generator.out
+	gcc process_generator.c process_funcs.c -o process_generator.out
 	gcc clk.c -o clk.out
 	gcc scheduler.c priority_queue.c -o scheduler.out
 	gcc process.c -o process.out

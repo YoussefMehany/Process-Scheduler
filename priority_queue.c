@@ -51,6 +51,7 @@ void push(Heap* heap, Process* newProcess,int ispiriority) {
     }
     (heap->N)++;
     heap->tree[heap->N] = newProcess;
+    heap->count++;
     int current = heap->N;
     if(ispiriority==0){
         while (current > 1 && heap->tree[current]->remainingTime < heap->tree[current / 2]->remainingTime) {
@@ -74,8 +75,13 @@ Process* peak(Heap* heap) {
     return heap->tree[1];
 }
 
+bool isEmpty(Heap* heap) {
+    return !heap->count;
+}
+
 void pop(Heap* heap,int ispiriority) {
     heap->tree[1] = heap->tree[heap->N--];
+    heap->count--;
     heapify(heap, 1, ispiriority);
 }
 
@@ -92,6 +98,7 @@ Heap* createHeap() {
     }
     heap->N = 0;
     heap->capacity = INITIAL_CAPACITY;
+    heap->count = 0;
     
     return heap;
 }

@@ -28,7 +28,7 @@ struct finish_message_pg {
 };
 
 void clearResources(int);
-void initiateScheduler();
+void initiateScheduler(int algo);
 void initiateClkProcess();
 void sendProcess(Process* process);
 void send_finish_pg(int f);
@@ -41,7 +41,10 @@ char* processToString(Process *process);
 int main(int argc, char * argv[])
 {
     //signal(SIGINT, clearResources);
-    initiateScheduler();
+    int algo;
+    printf("choose your alogrithm: (1)RR (2)SRTN (3)HPF\n");
+    scanf("%d", &algo);
+    initiateScheduler(algo);
     initiateClkProcess();
     initClk();
     int numProcesses = GetNumProcesses("processes.txt");
@@ -90,7 +93,7 @@ void handler(int signum)
 	
 }
 
-void initiateScheduler()
+void initiateScheduler(int algo)
 {
     pid_t pid = fork();
     pid_Scheduler = pid;
@@ -99,7 +102,11 @@ void initiateScheduler()
         perror("fork");
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
-        char *args[] = {"./scheduler.out", NULL};
+        char* args[3];
+        args[0] = "./scheduler.out";
+        args[1] = (char *)malloc(12);
+        sprintf(args[1], "%d", algo);
+        args[2] = NULL;
         execvp(args[0], args);
         perror("execvp");
         exit(EXIT_FAILURE);

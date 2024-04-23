@@ -22,12 +22,13 @@ struct finish_message_pg {
     int finish;      
 };
 
-Heap *pr_queue;
+void *ready_queue;
 Process* running_proc;
 int is_finish_pg = 0;
 
 void receiveProcess();
-void HPF(int r);
+void HPFCreate(int r);
+void HPF();
 void rec_finish_pg();
 void send_finish_scheduler();
 void handler2();
@@ -40,31 +41,61 @@ int main(int argc, char * argv[])
     signal(SIGUSR1, receiveProcess);
     signal(SIGUSR2, handler2);
     initClk();
-    //printf("from it self is %d \n",getpid());
-    pr_queue = createHeap();  // to change when user choice of algo 
-    int curTime = getClk();
-    running_proc = NULL;
-    while(1) {
-        if(!is_finish_pg) rec_finish_pg();
-        if(is_finish_pg && isEmpty(pr_queue) && running_proc == NULL) break;
-        if(!isEmpty(pr_queue)) {
-            if(running_proc == NULL) {
-                running_proc = peak(pr_queue);
-                pop(pr_queue, 1);
-                HPF(running_proc->remainingTime);
-                strcpy(running_proc->state, "Running");
-                running_proc->startTime = getClk();
-            }
-        }
-
+    int algo = atoi(argv[1]);
+    switch(algo) {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            HPF();
+            break;
     }
+    //printf("from it self is %d \n",getpid());
+    // pr_queue = createHeap();  // to change when user choice of algo 
+    // int curTime = getClk();
+    // running_proc = NULL;
+    // while(1) {
+    //     if(!is_finish_pg) rec_finish_pg();
+    //     if(is_finish_pg && isEmpty(pr_queue) && running_proc == NULL) break;
+    //     if(!isEmpty(pr_queue)) {
+    //         if(running_proc == NULL) {
+    //             running_proc = peak(pr_queue);
+    //             pop(pr_queue, 1);
+    //             HPFCreate(running_proc->remainingTime);
+    //             strcpy(running_proc->state, "Running");
+    //             running_proc->startTime = getClk();
+    //         }
+    //     }
+
+    // }
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
    send_finish_scheduler();
    destroyClk(true);
 }
 
-void HPF(int r) {
+void HPF()
+{
+    ready_queue = (Heap*) createHeap();  // to change when user choice of algo 
+    running_proc = NULL;
+    while(1) {
+        if(!is_finish_pg) rec_finish_pg();
+        if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
+        if(!isEmpty(ready_queue)) {
+            if(running_proc == NULL) {
+                running_proc = peak(ready_queue);
+                pop(ready_queue, 1);
+                HPFCreate(running_proc->remainingTime);
+                strcpy(running_proc->state, "Running");
+                running_proc->startTime = getClk();
+            }
+        }
+
+    }
+}
+
+void HPFCreate(int r) {
     pid_t pid = fork();
 
     if (pid == -1) {
@@ -119,7 +150,7 @@ void receiveProcess() {
     Process *p = stringtoProcess(buffer.mtext);
     // INSTEAD OF DISPLAYING THE PROCESS PUT IN THE QUEUE ACCORDING TO THE CHOSEN ALGO
     //displayProcess(p);
-    push(pr_queue, p, 1);
+    push(ready_queue, p, 1);
 }
 
 void rec_finish_pg() {

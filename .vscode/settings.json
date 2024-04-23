@@ -2,6 +2,11 @@
   "files.associations": {
     "process_funcs.h": "c",
     "headers.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "stat.h": "c",
+    "string.h": "c",
+    "sem.h": "c",
+    "priority_queue.h": "c",
+    "ipc.h": "c"
   }
 }

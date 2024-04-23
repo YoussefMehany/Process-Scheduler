@@ -13,7 +13,6 @@
 #include <signal.h>
 #include "headers.h"
 #include "process_funcs.h"
-#include "priority_queue.h"
 
 
 int pid_Scheduler;
@@ -35,42 +34,33 @@ void handler(int signum);
 int main(int argc, char * argv[])
 {
     //signal(SIGINT, clearResources);
-    //initiateScheduler();
+    initiateScheduler();
     initiateClkProcess();
     initClk();
-    Heap* que = createHeap();
     int numProcesses = GetNumProcesses("processes.txt");
+    int cont=1;
     Process** processes = malloc(numProcesses * sizeof(struct Process));
     readProcessesFromFile("processes.txt", processes);
-    while(true) {
+    while(cont) {
         int currentTime = getClk();
         for (int i=0; i < numProcesses; i++) {
             if (processes[i]->arrival == currentTime&&processes[i]->Sent==0) {
-                //SendProcesses(processes[i]);
-                displayProcess(processes[i]);
-                push(que,processes[i],1);
+                SendProcesses(processes[i]);
                 processes[i]->Sent=1;
             }
         }
         // for (int i=0; i < numProcesses; i++) {
-        //     // if (processes[i]->Sent==0) {
-        //     //     send_finish_pg(0);
-        //     //     break;
-        //     // }
+        //     if (processes[i]->Sent==0) {
+        //         send_finish_pg(0);
+        //         break;
+        //     }
         //     if(i==numProcesses-1){
-        //         //send_finish_pg(1);
-        //         goto check_finish_scheduler;
+        //         send_finish_pg(1);
+        //         cont=0;
         //     }
         // }
     }
-    //  check_finish_scheduler:
-    //  printf("a7aaaaaaaaaaaaaaaaa\n");
-    // //     rec_finish_scheduler();
-    // while(peak(que)!=NULL){
-    //     displayProcess(peak(que));
-    //     pop(que,1);
-    // }
-
+    // rec_finish_scheduler();
     // TODO Initialization
     // 1. Read the input files.
     // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.

@@ -9,7 +9,7 @@ void resize(Heap* heap) {
     }
 }
 
-void heapify(Heap* heap, int idx,int ispiriority) {
+void heapify(Heap* heap, int idx, int ispiriority) {
     if (idx > heap->N) return;
     int left = 2 * idx;
     int right = 2 * idx + 1;
@@ -72,14 +72,14 @@ void push(Heap* heap, Process* newProcess,int ispiriority) {
 }
 
 Process* peak(Heap* heap) {
-    return heap->tree[1];
+    return (isEmpty(heap) ? NULL : heap->tree[1]);
 }
 
 bool isEmpty(Heap* heap) {
     return !heap->count;
 }
 
-void pop(Heap* heap,int ispiriority) {
+void pop(Heap* heap, int ispiriority) {
     heap->tree[1] = heap->tree[heap->N--];
     heap->count--;
     heapify(heap, 1, ispiriority);

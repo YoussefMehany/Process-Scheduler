@@ -17,20 +17,21 @@
 
 int pid_Scheduler;
 
-struct msgbuf {
-    long mtype;
-    char mtext[30];
-};
-
 struct finish_message_pg {
     long mtype;    
     int finish;   
 };
 
+
+struct msgbuf {
+    long mtype;
+    char mtext[30];
+};
+
 void clearResources(int);
+void sendProcess(Process* process);
 void initiateScheduler(int algo);
 void initiateClkProcess();
-void sendProcess(Process* process);
 void send_finish_pg(int f);
 void rec_finish_scheduler();
 void handler(int signum);
@@ -140,32 +141,40 @@ char *processToString(Process *process) {
 }
 
 void sendProcess(Process *process) {
-    key_t key;
-    int msgid;
-    struct msgbuf buffer;
+    kill(pid_Scheduler, SIGUSR1);
+    key_t key_up, key_down;
+    int msgid_up, msgid_down;
+    struct msgbuf buffer_up, buffer_down;
     char *processStr = processToString(process);
 
-    key = ftok("keyfile", 'A');
-    if (key == -1) {
+    key_up = ftok("keyfile", 'A');
+    key_down = ftok("keyfile", 'Z');
+    if (key_up == -1 || key_down == -1) {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
 
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
+    msgid_up = msgget(key_up, 0666 | IPC_CREAT);
+    msgid_down = msgget(key_down, 0666 | IPC_CREAT);
+    if (msgid_up == -1 || msgid_down == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
     printf("Sending process: %s\n", processStr);
-    memset(&buffer, 0, sizeof(buffer));
-    strncpy(buffer.mtext, processStr, sizeof(buffer.mtext) - 1);
-    buffer.mtype = 5;
-    if (msgsnd(msgid, &buffer, sizeof(buffer.mtext), 0) == -1) {
+    memset(&buffer_up, 0, sizeof(buffer_up));
+    memset(&buffer_down, 0, sizeof(buffer_down));
+
+    strncpy(buffer_up.mtext, processStr, sizeof(buffer_up.mtext) - 1);
+    buffer_up.mtype = 5;
+    if (msgsnd(msgid_up, &buffer_up, sizeof(buffer_up.mtext), 0) == -1) {
         perror("msgsnd");
         exit(EXIT_FAILURE);
     }
 
-    kill(pid_Scheduler, SIGUSR1);
+    if(msgrcv(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5, !IPC_NOWAIT) == -1) {
+        perror("msgrec");
+        exit(EXIT_FAILURE);
+    }
     free(processStr);
 }
 
@@ -214,5 +223,4 @@ void rec_finish_scheduler()
         exit(EXIT_FAILURE);
     }
 }
-
 

@@ -146,29 +146,37 @@ Process* stringtoProcess(char* str) {
 }
 
 void receiveProcess() {
-    key_t key;
-    int msgid;
-    struct msgbuf buffer;
-    key = ftok("keyfile", 'A');
-    if (key == -1) {
+    key_t key_up, key_down;
+    int msgid_up, msgid_down;
+    struct msgbuf buffer_up, buffer_down;
+    key_up = ftok("keyfile", 'A');
+    key_down = ftok("keyfile", 'Z');
+    if (key_up == -1 || key_down == -1) {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
 
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
+    msgid_up = msgget(key_up, 0666 | IPC_CREAT);
+    msgid_down = msgget(key_down, 0666 | IPC_CREAT);
+    if (msgid_up == -1 || msgid_down == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
-    memset(&buffer, 0, sizeof(buffer));
-    if (msgrcv(msgid, &buffer, sizeof(buffer.mtext), 5, !IPC_NOWAIT) == -1) {
+    memset(&buffer_up, 0, sizeof(buffer_up));
+    memset(&buffer_down, 0, sizeof(buffer_down));
+    if (msgrcv(msgid_up, &buffer_up, sizeof(buffer_up.mtext), 5, !IPC_NOWAIT) == -1) {
         perror("msgrcv");
         exit(EXIT_FAILURE);
     }
-    Process *p = stringtoProcess(buffer.mtext);
+    Process *p = stringtoProcess(buffer_up.mtext);
     // INSTEAD OF DISPLAYING THE PROCESS PUT IN THE QUEUE ACCORDING TO THE CHOSEN ALGO
     //displayProcess(p);
     push(ready_queue, p, prio_flag);
+    buffer_down.mtype = 5;
+    if(msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1) {
+        perror("msgsend");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void rec_finish_pg() {

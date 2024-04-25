@@ -1,5 +1,5 @@
-
 #include "headers.h"
+#include <stdbool.h>
 #include "process_funcs.c"
 #include "priority_queue.h"
 
@@ -23,7 +23,7 @@ int main(int agrc, char * argv[])
         }
     }
     kill(getppid(), SIGUSR2);
-    destroyClk(false);
+    destroyClk(false); 
     
     return 0;
 }

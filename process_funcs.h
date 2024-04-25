@@ -3,6 +3,7 @@
 
 typedef struct Process {
     int id;
+    int pid;
     int arrival;
     int startTime;
     int runtime;

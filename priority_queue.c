@@ -9,12 +9,12 @@ void resize(Heap* heap) {
     }
 }
 
-void heapify(Heap* heap, int idx, int ispiriority) {
+void heapify(Heap* heap, int idx, int ispriority) {
     if (idx > heap->N) return;
     int left = 2 * idx;
     int right = 2 * idx + 1;
     int smallest = idx;
-    if(ispiriority == 0)
+    if(ispriority == 0)
     {
         if (left <= heap->N && heap->tree[left]->remainingTime < heap->tree[smallest]->remainingTime) {
             smallest = left;
@@ -26,7 +26,7 @@ void heapify(Heap* heap, int idx, int ispiriority) {
             Process* temp = heap->tree[smallest];
             heap->tree[smallest] = heap->tree[idx];
             heap->tree[idx] = temp;
-            heapify(heap, smallest, ispiriority);
+            heapify(heap, smallest, ispriority);
         }
     }
     else{
@@ -40,12 +40,12 @@ void heapify(Heap* heap, int idx, int ispiriority) {
             Process* temp = heap->tree[smallest];
             heap->tree[smallest] = heap->tree[idx];
             heap->tree[idx] = temp;
-            heapify(heap, smallest, ispiriority);
+            heapify(heap, smallest, ispriority);
         }
     }
 }
 
-void push(Heap* heap, Process* newProcess,int ispiriority) {
+void push(Heap* heap, Process* newProcess, int ispriority) {
     if (heap->N + 1 >= heap->capacity) {
         resize(heap);
     }
@@ -53,7 +53,7 @@ void push(Heap* heap, Process* newProcess,int ispiriority) {
     heap->tree[heap->N] = newProcess;
     heap->count++;
     int current = heap->N;
-    if(ispiriority==0){
+    if(ispriority == 0){
         while (current > 1 && heap->tree[current]->remainingTime < heap->tree[current / 2]->remainingTime) {
             Process* temp = heap->tree[current];
             heap->tree[current] = heap->tree[current / 2];

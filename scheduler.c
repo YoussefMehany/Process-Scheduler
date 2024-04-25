@@ -25,6 +25,7 @@ struct finish_message_pg {
 void *ready_queue;
 Process* running_proc;
 int is_finish_pg = 0;
+int currentTime;
 bool prio_flag = false;
 int algo;
 
@@ -73,16 +74,13 @@ void HPF()
         if(!isEmpty(ready_queue)) {
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
-                pop(ready_queue, prio_flag);
                 createProcess(running_proc);
                 strcpy(running_proc->state, "Running");
-                running_proc->startTime = getClk();
             }
         }
 
     }
 }
-int currentTime;
 void runPeak() {
     running_proc = peak(ready_queue);
     if(running_proc->runtime != running_proc->remainingTime)
@@ -98,11 +96,6 @@ void SRTN() {
         if(!is_finish_pg) rec_finish_pg();
         if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
         if(!isEmpty(ready_queue)) {
-            if(!strcmp(peak(ready_queue)->state, "finished")) {
-                pop(ready_queue, prio_flag);
-                running_proc = NULL;
-                continue;
-            }
             if(running_proc != peak(ready_queue)) {
                 if(running_proc) {
                     kill(running_proc->pid, SIGSTOP);
@@ -142,7 +135,8 @@ void handler2() {
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
-    if(algo == 3) running_proc = NULL;
+    pop(ready_queue, prio_flag);
+    running_proc = NULL;
 }
 
 Process* stringtoProcess(char* str) {

@@ -19,9 +19,9 @@ Heap* createHeap();
 void destroyHeap(Heap* heap);
 void resize(Heap* heap);
 bool isEmpty(Heap* heap);
-void heapify(Heap* heap, int idx,int ispiriority);
-void push(Heap* heap, Process* newProcess,int ispiriority);
+void heapify(Heap* heap, int idx,int ispriority);
+void push(Heap* heap, Process* newProcess,int ispriority);
 Process* peak(Heap* heap);
-void pop(Heap* heap,int ispiriority);
+void pop(Heap* heap,int ispriority);
 
 #endif

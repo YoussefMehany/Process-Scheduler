@@ -25,10 +25,14 @@ struct finish_message_pg {
 void *ready_queue;
 Process* running_proc;
 int is_finish_pg = 0;
+bool prio_flag = false;
+int algo;
 
 void receiveProcess();
-void HPFCreate(int r);
+void createProcess(Process* p);
 void HPF();
+void SRTN();
+void runPeak();
 void rec_finish_pg();
 void send_finish_scheduler();
 void handler2();
@@ -41,34 +45,18 @@ int main(int argc, char * argv[])
     signal(SIGUSR1, receiveProcess);
     signal(SIGUSR2, handler2);
     initClk();
-    int algo = atoi(argv[1]);
+    algo = atoi(argv[1]);
+    prio_flag = (algo == 3);
     switch(algo) {
         case 1:
             break;
         case 2:
+            SRTN();
             break;
         case 3:
             HPF();
             break;
     }
-    //printf("from it self is %d \n",getpid());
-    // pr_queue = createHeap();  // to change when user choice of algo 
-    // int curTime = getClk();
-    // running_proc = NULL;
-    // while(1) {
-    //     if(!is_finish_pg) rec_finish_pg();
-    //     if(is_finish_pg && isEmpty(pr_queue) && running_proc == NULL) break;
-    //     if(!isEmpty(pr_queue)) {
-    //         if(running_proc == NULL) {
-    //             running_proc = peak(pr_queue);
-    //             pop(pr_queue, 1);
-    //             HPFCreate(running_proc->remainingTime);
-    //             strcpy(running_proc->state, "Running");
-    //             running_proc->startTime = getClk();
-    //         }
-    //     }
-
-    // }
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
    send_finish_scheduler();
@@ -77,7 +65,7 @@ int main(int argc, char * argv[])
 
 void HPF()
 {
-    ready_queue = (Heap*) createHeap();  // to change when user choice of algo 
+    ready_queue = (Heap*) createHeap(); 
     running_proc = NULL;
     while(1) {
         if(!is_finish_pg) rec_finish_pg();
@@ -85,8 +73,8 @@ void HPF()
         if(!isEmpty(ready_queue)) {
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
-                pop(ready_queue, 1);
-                HPFCreate(running_proc->remainingTime);
+                pop(ready_queue, prio_flag);
+                createProcess(running_proc);
                 strcpy(running_proc->state, "Running");
                 running_proc->startTime = getClk();
             }
@@ -94,10 +82,45 @@ void HPF()
 
     }
 }
-
-void HPFCreate(int r) {
+int currentTime;
+void runPeak() {
+    running_proc = peak(ready_queue);
+    if(running_proc->runtime != running_proc->remainingTime)
+        kill(running_proc->pid, SIGCONT);
+    else createProcess(running_proc);
+    currentTime = getClk();
+    strcpy(running_proc->state, "Running");
+}
+void SRTN() {
+    running_proc = NULL;
+    ready_queue = (Heap*)createHeap(); 
+    while(1) {
+        if(!is_finish_pg) rec_finish_pg();
+        if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
+        if(!isEmpty(ready_queue)) {
+            if(!strcmp(peak(ready_queue)->state, "finished")) {
+                pop(ready_queue, prio_flag);
+                running_proc = NULL;
+                continue;
+            }
+            if(running_proc != peak(ready_queue)) {
+                if(running_proc) {
+                    kill(running_proc->pid, SIGSTOP);
+                    strcpy(running_proc->state, "Ready");
+                }
+                runPeak();
+            }
+        }
+        if(getClk() > currentTime) {
+            currentTime = getClk();
+            if(running_proc)
+                running_proc->remainingTime--;
+        }
+    }
+}
+void createProcess(Process* p) {
+    int r = p->remainingTime;
     pid_t pid = fork();
-
     if (pid == -1) {
         perror("fork");
         exit(EXIT_FAILURE);
@@ -111,14 +134,15 @@ void HPFCreate(int r) {
         perror("execvp");
         exit(EXIT_FAILURE);
     }
+    p->pid = pid;
+    running_proc->startTime = getClk();
 }
 
-void handler2()
-{
-    strcpy(running_proc->state,"finished");
+void handler2() {
+    strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
-    running_proc = NULL;
+    if(algo == 3) running_proc = NULL;
 }
 
 Process* stringtoProcess(char* str) {
@@ -150,7 +174,7 @@ void receiveProcess() {
     Process *p = stringtoProcess(buffer.mtext);
     // INSTEAD OF DISPLAYING THE PROCESS PUT IN THE QUEUE ACCORDING TO THE CHOSEN ALGO
     //displayProcess(p);
-    push(ready_queue, p, 1);
+    push(ready_queue, p, prio_flag);
 }
 
 void rec_finish_pg() {

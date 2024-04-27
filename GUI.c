@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <signal.h>
@@ -62,7 +63,9 @@ void add_labels() {
     gtk_box_pack_start(GTK_BOX(vbox), listbox_received_strings, FALSE, FALSE, 10);
 
     //add_received_string("ID    arrivalTime    runtime    priority    waitingtime    remainingTime     state");
-
+    GdkRGBA entry_bg_color;
+    gdk_rgba_parse(&entry_bg_color, "#2f2f2f");
+    gtk_widget_override_background_color(listbox_received_strings, GTK_STATE_FLAG_NORMAL, &entry_bg_color);
     // Show the list box
     gtk_widget_show_all(window);
 }
@@ -122,10 +125,17 @@ void add_label_and_entry() {
     g_signal_connect(entry, "activate", G_CALLBACK(on_entry_activate), window);
 
     // Apply custom styles for the entry field
+    gtk_widget_override_color(label_filename, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 1, 1, 1});
     gtk_widget_override_color(entry, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 1, 1, 1}); // White text color
     PangoFontDescription *font_desc = pango_font_description_from_string("Arial 15");
     gtk_widget_override_font(label_filename, font_desc);
     pango_font_description_free(font_desc);
+
+    // Set the background color of the entry widget
+    GdkRGBA entry_bg_color;
+    gdk_rgba_parse(&entry_bg_color, "#2f2f2f");
+    gtk_widget_override_background_color(entry, GTK_STATE_FLAG_NORMAL, &entry_bg_color);
+
 
     // Show the label and entry field
     gtk_widget_show_all(window);
@@ -175,7 +185,7 @@ void add_number_input_quantum() {
 
 
     GtkWidget *entry2 = gtk_entry_new();
-     gtk_widget_set_name(entry2, "custom-entry-quantum");
+    gtk_widget_set_name(entry2, "custom-entry-quantum");
     gtk_widget_set_size_request(entry2, 10, 50); 
     gtk_entry_set_input_purpose(GTK_ENTRY(entry2), GTK_INPUT_PURPOSE_NUMBER);
     gtk_box_pack_start(GTK_BOX(hbox_buttons), entry2, FALSE, FALSE, 0);
@@ -183,10 +193,15 @@ void add_number_input_quantum() {
     g_signal_connect(entry2, "activate", G_CALLBACK(on_entry_activate_quantum), NULL);
 
     //styles
+    gtk_widget_override_color(label2, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 1, 1, 1});
     gtk_widget_override_color(entry2, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 1, 1, 1}); // White text color
     PangoFontDescription *font_desc = pango_font_description_from_string("Arial 15");
     gtk_widget_override_font(label2, font_desc);
     pango_font_description_free(font_desc);
+
+    GdkRGBA entry_bg_color;
+    gdk_rgba_parse(&entry_bg_color, "#2f2f2f");
+    gtk_widget_override_background_color(entry2, GTK_STATE_FLAG_NORMAL, &entry_bg_color);
 
     gtk_widget_show_all(window);
 }
@@ -302,7 +317,9 @@ int main(int argc, char *argv[]) {
 
 
     // Apply custom styles
-
+    GdkRGBA window_color;
+    gdk_rgba_parse(&window_color, "#302c2c");
+    gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, &window_color);
     // Set font size and color for labels
     PangoFontDescription *font_desc = pango_font_description_from_string("Arial 30");
     gtk_widget_override_font(label1, font_desc);
@@ -317,11 +334,23 @@ int main(int argc, char *argv[]) {
     gtk_widget_override_color(label2, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 1, 1, 1}); // Blue color
 
     // Set button styles
+
+// Set the background color of the button widget
+    GdkRGBA button_bg_color;
+    gdk_rgba_parse(&button_bg_color, "#373737"); // Change "blue" to your desired color
+
     gtk_widget_override_color(button_rr, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){1, 0, 0, 1}); // White text color
+
+    gtk_widget_override_background_color(button_rr, GTK_STATE_FLAG_NORMAL, &button_bg_color);
 
     gtk_widget_override_color(button_hpf, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){0, 1, 0, 1}); // White text color
 
+    gtk_widget_override_background_color(button_hpf, GTK_STATE_FLAG_NORMAL, &button_bg_color);
+
     gtk_widget_override_color(button_srtn, GTK_STATE_FLAG_NORMAL, &(GdkRGBA){0, 0, 1, 1}); // White text color
+
+    gtk_widget_override_background_color(button_srtn, GTK_STATE_FLAG_NORMAL, &button_bg_color);
+
 
 
     // Show the window and all its child widgets

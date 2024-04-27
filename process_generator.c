@@ -1,4 +1,3 @@
-
 #include <sys/types.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -34,7 +33,6 @@ void initiateScheduler(int algo);
 void initiateClkProcess();
 void send_finish_pg(int f);
 void rec_finish_scheduler();
-void handler(int signum);
 char* processToString(Process *process);
 
 
@@ -89,10 +87,7 @@ int main(int argc, char * argv[])
     return 0;
 }
 
-void handler(int signum)
-{
-	
-}
+
 
 void initiateScheduler(int algo)
 {

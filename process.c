@@ -5,20 +5,23 @@
 
 
 /* Modify this file as needed*/
-int remainingtime;
-
 
 int main(int agrc, char * argv[])
 {
     initClk();
     int currentTime = getClk();
+    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int* shared_memory = (int *) shmat(shmid, (void *)0, 0);
 
-    remainingtime = atoi(argv[1]);
+    int remainingtime = atoi(argv[1]);
+
+    *shared_memory = remainingtime;
     //TODO it needs to get the remaining time from somewhere
     //remainingtime = ??;
     while (remainingtime > 0) {
         if(getClk() > currentTime) {
             remainingtime--;
+            *shared_memory = remainingtime;
             currentTime = getClk();
         }
     }

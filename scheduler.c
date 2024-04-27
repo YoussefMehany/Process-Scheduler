@@ -91,11 +91,16 @@ void runPeak() {
 }
 void SRTN() {
     running_proc = NULL;
+    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int* shared_memory = (int *) shmat(shmid, (void *)0, 0);
     ready_queue = (Heap*)createHeap(); 
     while(1) {
         if(!is_finish_pg) rec_finish_pg();
         if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
         if(!isEmpty(ready_queue)) {
+            if(running_proc) {
+                running_proc->remainingTime = *shared_memory;
+            }
             if(running_proc != peak(ready_queue)) {
                 if(running_proc) {
                     kill(running_proc->pid, SIGSTOP);
@@ -104,11 +109,11 @@ void SRTN() {
                 runPeak();
             }
         }
-        if(getClk() > currentTime) {
-            currentTime = getClk();
-            if(running_proc)
-                running_proc->remainingTime--;
-        }
+        // if(getClk() > currentTime) {
+        //     currentTime = getClk();
+        //     if(running_proc)
+        //         running_proc->remainingTime--;
+        // }
     }
 }
 void createProcess(Process* p) {

@@ -2,9 +2,10 @@
 #define PROCESS_H
 
 typedef struct Process {
-    long mtype;
     int id;
+    int pid;
     int arrival;
+    int startTime;
     int runtime;
     int priority;
     int WaitingTime;
@@ -14,7 +15,7 @@ typedef struct Process {
 } Process;
 
 // Function prototypes
-void initProcess(struct Process *p, int id, int arrival, int runtime, int priority, int WaitingTime, int remainingTime, const char *state);
+void initProcess(struct Process *p, int id, int arrival, int starttime, int runtime, int priority, int WaitingTime, int remainingTime, const char *state);
 void displayProcess(const struct Process *p);
 void readProcessesFromFile(char *filename, struct Process **processes);
 int GetNumProcesses(char* filename);

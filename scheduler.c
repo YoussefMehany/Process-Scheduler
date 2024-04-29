@@ -34,6 +34,7 @@ void createProcess(Process* p);
 void HPF();
 void SRTN();
 void runPeak();
+void clearIpcs();
 void rec_finish_pg();
 void send_finish_scheduler();
 void handler2();
@@ -61,7 +62,8 @@ int main(int argc, char * argv[])
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
    send_finish_scheduler();
-   destroyClk(true);
+   clearIpcs();
+   destroyClk(false);
 }
 
 void HPF()
@@ -109,11 +111,6 @@ void SRTN() {
                 runPeak();
             }
         }
-        // if(getClk() > currentTime) {
-        //     currentTime = getClk();
-        //     if(running_proc)
-        //         running_proc->remainingTime--;
-        // }
     }
 }
 void createProcess(Process* p) {
@@ -225,6 +222,17 @@ void send_finish_scheduler(){
     fm.finish = 0;
     if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
         perror("msgsnd");
+        exit(EXIT_FAILURE);
+    }
+}
+void clearIpcs() {
+    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    if (shmid == -1) {
+        perror("shmget");
+        exit(EXIT_FAILURE);
+    }
+    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+        perror("shmctl");
         exit(EXIT_FAILURE);
     }
 }

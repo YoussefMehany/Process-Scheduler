@@ -12,13 +12,13 @@ CircularQueue* createQueue() {
 }
 
 void deleteQueue(CircularQueue* queue) {
-    while (!isEmpty(queue)) {
+    while (!is_empty(queue)) {
         dequeue(queue);
     }
     free(queue);
 }
 
-int isEmpty(CircularQueue* queue) {
+bool is_empty(CircularQueue* queue) {
     return queue->head == NULL;
 }
 
@@ -31,8 +31,8 @@ void enqueue(CircularQueue* queue, Process* data) {
     newNode->data = data;
     newNode->next = NULL;
 
-    if (isEmpty(queue)) {
-        queue->head = queue->tail = newNode;
+    if (is_empty(queue)) {
+        queue->head=queue->current = queue->tail = newNode;
     } else {
         queue->tail->next = newNode;
         queue->tail = newNode;
@@ -41,7 +41,7 @@ void enqueue(CircularQueue* queue, Process* data) {
 }
 
 Process* dequeue(CircularQueue* queue) {
-    if (isEmpty(queue)) {
+    if (is_empty(queue)) {
         printf("Queue underflow\n");
         return NULL;
     }
@@ -50,7 +50,7 @@ Process* dequeue(CircularQueue* queue) {
 
     if (queue->head == queue->tail) {
         free(queue->head);
-        queue->head = queue->tail = NULL;
+        queue->head=queue->current = queue->tail = NULL;
     } else {
         Node* temp = queue->head;
         queue->head = queue->head->next;
@@ -61,7 +61,7 @@ Process* dequeue(CircularQueue* queue) {
 }
 
 void print(CircularQueue* queue) {
-    if (isEmpty(queue)) {
+    if (is_empty(queue)) {
         printf("Queue is empty\n");
         return;
     }
@@ -74,7 +74,7 @@ void print(CircularQueue* queue) {
     printf("\n");
 }
 void moveToNext(CircularQueue* queue) {
-    if (isEmpty(queue)) {
+    if (is_empty(queue)) {
         printf("Queue is empty\n");
         return;
     }
@@ -82,14 +82,14 @@ void moveToNext(CircularQueue* queue) {
 }
 
 void deleteCurrent(CircularQueue* queue) {
-    if (isEmpty(queue)) {
+    if (is_empty(queue)) {
         printf("Queue is empty\n");
         return;
     }
 
     if (queue->current == queue->head) {
-        // If the current pointer is at the head
         dequeue(queue);
+        queue->current=queue->head;
         return;
     }
 
@@ -107,4 +107,8 @@ void deleteCurrent(CircularQueue* queue) {
     }
     free(current);
     queue->current = prev->next;
+}
+Process* getCurrent(CircularQueue*queue)
+{
+    return queue->current->data;
 }

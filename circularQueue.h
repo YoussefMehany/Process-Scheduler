@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "process_funcs.h"
-
+#include <stdbool.h>
 
 typedef struct Node {
     Process* data;
@@ -20,10 +20,11 @@ typedef struct CircularQueue {
 
 CircularQueue* createQueue();
 void deleteQueue(CircularQueue* queue);
-int isEmpty(CircularQueue* queue);
+bool is_empty(CircularQueue* queue);
 void enqueue(CircularQueue* queue, Process* data);
 Process* dequeue(CircularQueue* queue);
 void print(CircularQueue* queue);
 void moveToNext(CircularQueue* queue);
 void deleteCurrent(CircularQueue* queue);
+Process* getCurrent(CircularQueue*queue);
 #endif /* CIRCULAR_QUEUE_H */

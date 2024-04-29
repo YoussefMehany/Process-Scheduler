@@ -184,7 +184,7 @@ void receiveProcess() {
     }
 }
 
-void pg_finish(){
+void pg_finish() {
     is_finish_pg = 1;
 }
 

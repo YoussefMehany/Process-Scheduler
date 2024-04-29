@@ -76,6 +76,7 @@ void HPF()
         if(!isEmpty(ready_queue)) {
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
+                pop(ready_queue, prio_flag);
                 createProcess(running_proc);
                 strcpy(running_proc->state, "Running");
             }
@@ -137,7 +138,7 @@ void handler2() {
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
-    pop(ready_queue, prio_flag);
+    if(algo == 2) pop(ready_queue, prio_flag);
     running_proc = NULL;
 }
 

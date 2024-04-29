@@ -31,15 +31,13 @@ void clearResources();
 void sendProcess(Process* process);
 void initiateScheduler(int algo);
 void initiateClkProcess();
-// void send_finish_pg(int f);
-// void rec_finish_scheduler();
 char* processToString(Process *process);
 
 
 
 int main(int argc, char * argv[])
 {
-    signal(SIGINT,clearResources);
+    signal(SIGINT, clearResources);
     int algo;
     printf("choose your alogrithm: (1)RR (2)SRTN (3)HPF\n");
     scanf("%d", &algo);
@@ -63,10 +61,8 @@ int main(int argc, char * argv[])
             if(i == numProcesses - 1) waitSend = 0;
         }
     }
-    kill(pid_Scheduler,SIGCHLD);
-    // rec_finish_scheduler();
-    waitpid(pid_Scheduler,NULL,0);
-    //destroyClk(true);
+    kill(pid_Scheduler, SIGUSR2);
+    waitpid(pid_Scheduler, NULL, 0);
     return 0;
 }
 
@@ -149,48 +145,6 @@ void sendProcess(Process *process) {
     free(processStr);
 }
 
-// void send_finish_pg(int f){
-//     key_t key;
-//     int msgid;
-//     key = ftok("keyfile", 'B');
-//     if (key == -1) {
-//         perror("ftok");
-//         exit(EXIT_FAILURE);
-//     }
-//     msgid = msgget(key, 0666 | IPC_CREAT);
-//     if (msgid == -1) {
-//         perror("msgget");
-//         exit(EXIT_FAILURE);
-//     }
-//     struct finish_message_pg fm;
-//     fm.mtype = 1;
-//     fm.finish = f;
-//     if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
-//         perror("msgsnd");
-//         exit(EXIT_FAILURE);
-//     }
-// }
-
-// void rec_finish_scheduler()
-// {
-//     key_t key;
-//     int msgid;
-//     struct finish_message_pg fm;
-//     key = ftok("keyfile", 'C');
-//     if (key == -1) {
-//         perror("ftok");
-//         exit(EXIT_FAILURE);
-//     }
-//     msgid = msgget(key, 0666 | IPC_CREAT);
-//     if (msgid == -1) {
-//         perror("msgget");
-//         exit(EXIT_FAILURE);
-//     }
-//     if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
-//         perror("msgrcv");
-//         exit(EXIT_FAILURE);
-//     }
-// }
 
 void clearResources() {
     key_t key_up, key_down, key_s, key_f;

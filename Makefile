@@ -23,5 +23,5 @@ c:
 	clear
 	
 GUI: 
-	# gcc -o GUI GUI.c $(pkg-config --cflags --libs gtk+-3.0)
+	# gcc -o GUI.out GUI.c $(pkg-config --cflags --libs gtk+-3.0)
 	./GUI.out

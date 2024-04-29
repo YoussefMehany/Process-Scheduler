@@ -4,7 +4,6 @@
 #include "priority_queue.h"
 
 
-/* Modify this file as needed*/
 
 int main(int agrc, char * argv[])
 {
@@ -16,8 +15,6 @@ int main(int agrc, char * argv[])
     int remainingtime = atoi(argv[1]);
 
     *shared_memory = remainingtime;
-    //TODO it needs to get the remaining time from somewhere
-    //remainingtime = ??;
     while (remainingtime > 0) {
         if(getClk() > currentTime) {
             remainingtime--;
@@ -25,9 +22,8 @@ int main(int agrc, char * argv[])
             currentTime = getClk();
         }
     }
-    kill(getppid(), SIGUSR2);
-    destroyClk(false); 
-    
+    kill(getppid(), SIGPIPE);
+    destroyClk(false);
     return 0;
 }
 

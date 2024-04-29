@@ -27,7 +27,7 @@ struct msgbuf {
     char mtext[30];
 };
 
-void clearResources(int);
+void clearResources();
 void sendProcess(Process* process);
 void initiateScheduler(int algo);
 void initiateClkProcess();
@@ -39,7 +39,6 @@ char* processToString(Process *process);
 
 int main(int argc, char * argv[])
 {
-    //signal(SIGINT, clearResources);
     int algo;
     printf("choose your alogrithm: (1)RR (2)SRTN (3)HPF\n");
     scanf("%d", &algo);
@@ -70,20 +69,7 @@ int main(int argc, char * argv[])
         }
     }
     rec_finish_scheduler();
-    // TODO Initialization
-    // 1. Read the input files.
-    // 2. Ask the user for the chosen scheduling algorithm and its parameters, if there are any.
-    // 3. Initiate and create the scheduler and clock processes.
-    // 4. Use this function after creating the clock process to initialize clock
-   
-    
-    // To get time use getClk()
-    // TODO Generation Main Loop
-    // 5. Create a data structure for processes and provide it with its parameters.
-    // 6. Send the information to the scheduler at the appropriate time.
-    
-    // 7. Clear clock resources
-    destroyClk(true);
+    clearResources();
     return 0;
 }
 
@@ -124,10 +110,7 @@ void initiateClkProcess()
     }
 }
 
-void clearResources(int signum)
-{
-    //TODO Clears all resources in case of interruption
-}
+
 
 char *processToString(Process *process) {
     char *str = malloc(30 * sizeof(char));
@@ -217,5 +200,30 @@ void rec_finish_scheduler()
         perror("msgrcv");
         exit(EXIT_FAILURE);
     }
+}
+void clearResources() {
+    key_t key_up, key_down, key_s, key_f;
+    int msgid_up, msgid_down, msgid_s, msgid_f;
+    key_up = ftok("keyfile", 'A');
+    key_down = ftok("keyfile", 'Z');
+    key_s = ftok("keyfile", 'B');
+    key_f = ftok("keyfile", 'C');
+    if (key_up == -1 || key_down == -1 || key_s == -1 || key_f == -1) {
+        perror("ftok");
+        exit(EXIT_FAILURE);
+    }
+    msgid_up = msgget(key_up, 0666 | IPC_CREAT);
+    msgid_down = msgget(key_down, 0666 | IPC_CREAT);
+    msgid_s = msgget(key_s, 0666 | IPC_CREAT);
+    msgid_f = msgget(key_f, 0666 | IPC_CREAT);
+    if (msgid_up == -1 || msgid_down == -1 || msgid_s == -1 || msgid_f == -1) {
+        perror("msgget");
+        exit(EXIT_FAILURE);
+    }
+    if (msgctl(msgid_up, IPC_RMID, NULL) == -1 || msgctl(msgid_down, IPC_RMID, NULL) == -1 || msgctl(msgid_s, IPC_RMID, NULL) == -1 || msgctl(msgid_f, IPC_RMID, NULL) == -1) {
+        perror("msgctl");
+        exit(EXIT_FAILURE);
+    }   
+    destroyClk(true);
 }
 

@@ -1,20 +1,29 @@
-#ifndef CIRCULARQUEUE_H
-#define CIRCULARQUEUE_H
+#ifndef CIRCULAR_QUEUE_H
+#define CIRCULAR_QUEUE_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "process_funcs.h"
 
-#define INITIAL_CAPACITY 10
 
-extern Process** queue;
-extern int front, rear, capacity;
+typedef struct Node {
+    Process* data;
+    struct Node* next;
+} Node;
 
-int isFull();
-int isEmpty();
-void resize();
-void enqueue(Process* data);
-Process* dequeue();
-void print();
 
-#endif // CIRCULARQUEUE_H
+typedef struct CircularQueue {
+    Node* head;
+    Node* tail;
+    Node* current;
+} CircularQueue;
+
+CircularQueue* createQueue();
+void deleteQueue(CircularQueue* queue);
+int isEmpty(CircularQueue* queue);
+void enqueue(CircularQueue* queue, Process* data);
+Process* dequeue(CircularQueue* queue);
+void print(CircularQueue* queue);
+void moveToNext(CircularQueue* queue);
+void deleteCurrent(CircularQueue* queue);
+#endif /* CIRCULAR_QUEUE_H */

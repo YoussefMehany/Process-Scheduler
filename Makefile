@@ -21,3 +21,7 @@ runv:
 c:
 	ipcrm -a
 	clear
+	
+GUI: 
+	# gcc -o GUI GUI.c $(pkg-config --cflags --libs gtk+-3.0)
+	./GUI.out

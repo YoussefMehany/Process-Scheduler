@@ -8,10 +8,12 @@
 #include "headers.h"
 
 int shmid;
+int* shmaddr;
 
 /* Clear the resources before exit */
 void cleanup(int signum)
 {
+    shmdt(shmaddr);
     shmctl(shmid, IPC_RMID, NULL);
     printf("Clock terminating!\n");
     exit(0);
@@ -30,7 +32,7 @@ int main(int argc, char * argv[])
         perror("Error in creating shm!");
         exit(-1);
     }
-    int * shmaddr = (int *) shmat(shmid, (void *)0, 0);
+    shmaddr = (int *) shmat(shmid, (void *)0, 0);
     if ((long)shmaddr == -1)
     {
         perror("Error in attaching the shm in clock!");

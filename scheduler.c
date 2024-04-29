@@ -22,7 +22,8 @@ struct finish_message_pg {
     int finish;      
 };
 
-void *ready_queue;
+void* ready_queue;
+int* shared_memory;
 Process* running_proc;
 int is_finish_pg = 0;
 int currentTime;
@@ -35,9 +36,10 @@ void HPF();
 void SRTN();
 void runPeak();
 void clearIpcs();
-void rec_finish_pg();
-void send_finish_scheduler();
+// void rec_finish_pg();
+// void send_finish_scheduler();
 void handler2();
+void pg_finish();
 Process* stringtoProcess(char* str);
 
 
@@ -46,6 +48,8 @@ int main(int argc, char * argv[])
 {
     signal(SIGUSR1, receiveProcess);
     signal(SIGUSR2, handler2);
+    signal(SIGINT,clearIpcs);
+    signal(SIGCHLD,pg_finish);
     initClk();
     algo = atoi(argv[1]);
     prio_flag = (algo == 3);
@@ -61,9 +65,8 @@ int main(int argc, char * argv[])
     }
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
-   send_finish_scheduler();
-   clearIpcs();
-   destroyClk(false);
+   //send_finish_scheduler();
+   destroyClk(true);
 }
 
 void HPF()
@@ -71,7 +74,7 @@ void HPF()
     ready_queue = (Heap*) createHeap(); 
     running_proc = NULL;
     while(1) {
-        if(!is_finish_pg) rec_finish_pg();
+        // if(!is_finish_pg) rec_finish_pg();
         if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
         if(!isEmpty(ready_queue)) {
             if(running_proc == NULL) {
@@ -81,9 +84,9 @@ void HPF()
                 strcpy(running_proc->state, "Running");
             }
         }
-
     }
 }
+
 void runPeak() {
     running_proc = peak(ready_queue);
     if(running_proc->runtime != running_proc->remainingTime)
@@ -92,13 +95,14 @@ void runPeak() {
     currentTime = getClk();
     strcpy(running_proc->state, "Running");
 }
+
 void SRTN() {
     running_proc = NULL;
     int shmid = shmget(399, 4, IPC_CREAT | 0666);
-    int* shared_memory = (int *) shmat(shmid, (void *)0, 0);
+    shared_memory = (int *) shmat(shmid, (void *)0, 0);
     ready_queue = (Heap*)createHeap(); 
     while(1) {
-        if(!is_finish_pg) rec_finish_pg();
+        // if(!is_finish_pg) rec_finish_pg();
         if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
         if(!isEmpty(ready_queue)) {
             if(running_proc) {
@@ -114,6 +118,7 @@ void SRTN() {
         }
     }
 }
+
 void createProcess(Process* p) {
     int r = p->remainingTime;
     pid_t pid = fork();
@@ -182,52 +187,56 @@ void receiveProcess() {
     }
 }
 
-void rec_finish_pg() {
-    key_t key;
-    int msgid;
-    struct finish_message_pg fm;
-    key = ftok("keyfile", 'B');
-    if (key == -1) {
-        perror("ftok");
-        exit(EXIT_FAILURE);
-    }
-
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
-        perror("msgget");
-        exit(EXIT_FAILURE);
-    }
-    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
-        perror("msgrcv");
-        exit(EXIT_FAILURE);
-    }
-    is_finish_pg = fm.finish;
+void pg_finish(){
+    is_finish_pg = 1;
 }
 
-void send_finish_scheduler(){
-    key_t key;
-    int msgid;
-    key = ftok("keyfile", 'C');
-    if (key == -1) {
-        perror("ftok");
-        exit(EXIT_FAILURE);
-    }
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
-        perror("msgget");
-        exit(EXIT_FAILURE);
-    }
-    struct finish_message_pg fm;
-    
-    fm.mtype = 1;
-    fm.finish = 0;
-    if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
-        perror("msgsnd");
-        exit(EXIT_FAILURE);
-    }
-}
+// void rec_finish_pg() {
+//     key_t key;
+//     int msgid;
+//     struct finish_message_pg fm;
+//     key = ftok("keyfile", 'B');
+//     if (key == -1) {
+//         perror("ftok");
+//         exit(EXIT_FAILURE);
+//     }
+//     msgid = msgget(key, 0666 | IPC_CREAT);
+//     if (msgid == -1) {
+//         perror("msgget");
+//         exit(EXIT_FAILURE);
+//     }
+//     if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
+//         perror("msgrcv");
+//         exit(EXIT_FAILURE);
+//     }
+//     is_finish_pg = fm.finish;
+// }
+
+// void send_finish_scheduler(){
+//     key_t key;
+//     int msgid;
+//     key = ftok("keyfile", 'C');
+//     if (key == -1) {
+//         perror("ftok");
+//         exit(EXIT_FAILURE);
+//     }
+//     msgid = msgget(key, 0666 | IPC_CREAT);
+//     if (msgid == -1) {
+//         perror("msgget");
+//         exit(EXIT_FAILURE);
+//     }
+//     struct finish_message_pg fm;
+//     fm.mtype = 1;
+//     fm.finish = 0;
+//     if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
+//         perror("msgsnd");
+//         exit(EXIT_FAILURE);
+//     }
+// }
+
 void clearIpcs() {
     int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    shmdt(shared_memory);
     if (shmid == -1) {
         perror("shmget");
         exit(EXIT_FAILURE);
@@ -236,4 +245,5 @@ void clearIpcs() {
         perror("shmctl");
         exit(EXIT_FAILURE);
     }
+    exit(0);
 }

@@ -2,7 +2,7 @@
 
 void resize(Heap* heap) {
     heap->capacity *= 2;
-    heap->tree = realloc(heap->tree, heap->capacity * sizeof(int));
+    heap->tree = realloc(heap->tree, heap->capacity * sizeof(Process*));
     if (heap->tree == NULL) {
         printf("Memory reallocation failed\n");
         exit(1);
@@ -91,7 +91,7 @@ Heap* createHeap() {
         printf("Memory allocation failed\n");
         exit(1);
     }
-    heap->tree = malloc(INITIAL_CAPACITY * sizeof(int));
+    heap->tree = malloc(INITIAL_CAPACITY * sizeof(Process*));
     if (heap->tree == NULL) {
         printf("Memory allocation failed\n");
         exit(1);

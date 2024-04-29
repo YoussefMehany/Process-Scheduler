@@ -26,7 +26,6 @@ void* ready_queue;
 int* shared_memory;
 Process* running_proc;
 int is_finish_pg = 0;
-int currentTime;
 bool prio_flag = false;
 int algo;
 
@@ -47,9 +46,9 @@ Process* stringtoProcess(char* str);
 int main(int argc, char * argv[])
 {
     signal(SIGUSR1, receiveProcess);
-    signal(SIGUSR2, handler2);
-    signal(SIGINT,clearIpcs);
-    signal(SIGCHLD,pg_finish);
+    signal(SIGUSR2, pg_finish);
+    signal(SIGPIPE, handler2);
+    signal(SIGINT, clearIpcs);
     initClk();
     algo = atoi(argv[1]);
     prio_flag = (algo == 3);
@@ -65,7 +64,6 @@ int main(int argc, char * argv[])
     }
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
-   //send_finish_scheduler();
    destroyClk(true);
 }
 
@@ -92,7 +90,6 @@ void runPeak() {
     if(running_proc->runtime != running_proc->remainingTime)
         kill(running_proc->pid, SIGCONT);
     else createProcess(running_proc);
-    currentTime = getClk();
     strcpy(running_proc->state, "Running");
 }
 
@@ -191,48 +188,6 @@ void pg_finish(){
     is_finish_pg = 1;
 }
 
-// void rec_finish_pg() {
-//     key_t key;
-//     int msgid;
-//     struct finish_message_pg fm;
-//     key = ftok("keyfile", 'B');
-//     if (key == -1) {
-//         perror("ftok");
-//         exit(EXIT_FAILURE);
-//     }
-//     msgid = msgget(key, 0666 | IPC_CREAT);
-//     if (msgid == -1) {
-//         perror("msgget");
-//         exit(EXIT_FAILURE);
-//     }
-//     if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
-//         perror("msgrcv");
-//         exit(EXIT_FAILURE);
-//     }
-//     is_finish_pg = fm.finish;
-// }
-
-// void send_finish_scheduler(){
-//     key_t key;
-//     int msgid;
-//     key = ftok("keyfile", 'C');
-//     if (key == -1) {
-//         perror("ftok");
-//         exit(EXIT_FAILURE);
-//     }
-//     msgid = msgget(key, 0666 | IPC_CREAT);
-//     if (msgid == -1) {
-//         perror("msgget");
-//         exit(EXIT_FAILURE);
-//     }
-//     struct finish_message_pg fm;
-//     fm.mtype = 1;
-//     fm.finish = 0;
-//     if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
-//         perror("msgsnd");
-//         exit(EXIT_FAILURE);
-//     }
-// }
 
 void clearIpcs() {
     int shmid = shmget(399, 4, IPC_CREAT | 0666);

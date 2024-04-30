@@ -15,9 +15,16 @@
 #include "circularQueue.h"
 struct msgbuf
 {
+#include "circularQueue.h"
+struct msgbuf
+{
     long mtype;
     char mtext[30];
 };
+struct finish_message_pg
+{
+    long mtype;
+    int finish;
 struct finish_message_pg
 {
     long mtype;
@@ -65,10 +72,10 @@ int main(int argc, char *argv[])
         HPF();
         break;
     }
-   //TODO implement the scheduler :)
-   //upon termination release the clock resources.
-   send_finish_scheduler();
-   destroyClk(true);
+    // TODO implement the scheduler :)
+    // upon termination release the clock resources.
+    send_finish_scheduler();
+    destroyClk(true);
 }
 void RR(int quantum)
 {
@@ -169,12 +176,18 @@ void SRTN() {
 }
 
 void createProcess(Process* p) {
+void createProcess(Process *p)
+{
     int r = p->remainingTime;
     pid_t pid = fork();
     if (pid == -1)
     {
         perror("fork");
         exit(EXIT_FAILURE);
+    }
+    else if (pid == 0)
+    {
+        char *args[3];
     }
     else if (pid == 0)
     {
@@ -193,13 +206,21 @@ void createProcess(Process* p) {
 
 void handler2()
 {
+void handler2()
+{
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
-    pop(ready_queue, prio_flag);
+    if(algo==1)
+    deleteCurrent(ready_queue);
+    if (algo == 2)
+        pop(ready_queue, prio_flag);
     running_proc = NULL;
 }
 
+Process *stringtoProcess(char *str)
+{
+    Process *p = (Process *)malloc(sizeof(Process));
 Process *stringtoProcess(char *str)
 {
     Process *p = (Process *)malloc(sizeof(Process));
@@ -216,12 +237,16 @@ void receiveProcess()
     key_down = ftok("keyfile", 'Z');
     if (key_up == -1 || key_down == -1)
     {
+    if (key_up == -1 || key_down == -1)
+    {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
 
     msgid_up = msgget(key_up, 0666 | IPC_CREAT);
     msgid_down = msgget(key_down, 0666 | IPC_CREAT);
+    if (msgid_up == -1 || msgid_down == -1)
+    {
     if (msgid_up == -1 || msgid_down == -1)
     {
         perror("msgget");
@@ -244,51 +269,61 @@ void receiveProcess()
     buffer_down.mtype = 5;
     if (msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1)
     {
+    if (msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1)
+    {
         perror("msgsend");
         exit(EXIT_FAILURE);
     }
 }
 
-void rec_finish_pg() {
+void rec_finish_pg()
+{
     key_t key;
     int msgid;
     struct finish_message_pg fm;
     key = ftok("keyfile", 'B');
-    if (key == -1) {
+    if (key == -1)
+    {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
 
     msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
+    if (msgid == -1)
+    {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
-    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1) {
+    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1)
+    {
         perror("msgrcv");
         exit(EXIT_FAILURE);
     }
     is_finish_pg = fm.finish;
 }
 
-void send_finish_scheduler(){
+void send_finish_scheduler()
+{
     key_t key;
     int msgid;
     key = ftok("keyfile", 'C');
-    if (key == -1) {
+    if (key == -1)
+    {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
     msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1) {
+    if (msgid == -1)
+    {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
     struct finish_message_pg fm;
-    
+
     fm.mtype = 1;
     fm.finish = 0;
-    if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1) {
+    if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1)
+    {
         perror("msgsnd");
         exit(EXIT_FAILURE);
     }

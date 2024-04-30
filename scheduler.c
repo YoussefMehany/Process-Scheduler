@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     }
     // TODO implement the scheduler :)
     // upon termination release the clock resources.
-    send_finish_scheduler();
+    //send_finish_scheduler();
     destroyClk(true);
 }
 void RR(int quantum)
@@ -81,8 +81,6 @@ void RR(int quantum)
      int currentTime = getClk();
     while (1)
     {
-        if (!is_finish_pg)
-            rec_finish_pg();
         if (is_finish_pg && is_empty(ready_queue) && running_proc == NULL)
             break;
         if (running_proc == NULL)
@@ -258,56 +256,19 @@ void receiveProcess()
         exit(EXIT_FAILURE);
     }
 }
-
-void rec_finish_pg()
-{
-    key_t key;
-    int msgid;
-    struct finish_message_pg fm;
-    key = ftok("keyfile", 'B');
-    if (key == -1)
-    {
-        perror("ftok");
-        exit(EXIT_FAILURE);
-    }
-
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1)
-    {
-        perror("msgget");
-        exit(EXIT_FAILURE);
-    }
-    if (msgrcv(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 1, !IPC_NOWAIT) == -1)
-    {
-        perror("msgrcv");
-        exit(EXIT_FAILURE);
-    }
-    is_finish_pg = fm.finish;
+void pg_finish() {
+    is_finish_pg = 1;
 }
-
-void send_finish_scheduler()
-{
-    key_t key;
-    int msgid;
-    key = ftok("keyfile", 'C');
-    if (key == -1)
-    {
-        perror("ftok");
+void clearIpcs() {
+    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    shmdt(shared_memory);
+    if (shmid == -1) {
+        perror("shmget");
         exit(EXIT_FAILURE);
     }
-    msgid = msgget(key, 0666 | IPC_CREAT);
-    if (msgid == -1)
-    {
-        perror("msgget");
+    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+        perror("shmctl");
         exit(EXIT_FAILURE);
     }
-    struct finish_message_pg fm;
-
-    fm.mtype = 1;
-    fm.finish = 0;
-    if (msgsnd(msgid, &fm, sizeof(struct finish_message_pg) - sizeof(long), 0) == -1)
-    {
-        perror("msgsnd");
-        exit(EXIT_FAILURE);
-    }
+    exit(0);
 }

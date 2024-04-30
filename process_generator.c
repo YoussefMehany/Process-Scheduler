@@ -172,4 +172,3 @@ void clearResources() {
     destroyClk(false);
     exit(0);   
 }
-

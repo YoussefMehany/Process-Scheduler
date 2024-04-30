@@ -13,18 +13,12 @@
 #include "process_funcs.c"
 #include "priority_queue.h"
 #include "circularQueue.h"
-struct msgbuf
-{
 #include "circularQueue.h"
 struct msgbuf
 {
     long mtype;
     char mtext[30];
 };
-struct finish_message_pg
-{
-    long mtype;
-    int finish;
 struct finish_message_pg
 {
     long mtype;
@@ -175,7 +169,6 @@ void SRTN() {
     }
 }
 
-void createProcess(Process* p) {
 void createProcess(Process *p)
 {
     int r = p->remainingTime;
@@ -206,8 +199,6 @@ void createProcess(Process *p)
 
 void handler2()
 {
-void handler2()
-{
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
@@ -218,9 +209,7 @@ void handler2()
     running_proc = NULL;
 }
 
-Process *stringtoProcess(char *str)
-{
-    Process *p = (Process *)malloc(sizeof(Process));
+
 Process *stringtoProcess(char *str)
 {
     Process *p = (Process *)malloc(sizeof(Process));
@@ -237,16 +226,12 @@ void receiveProcess()
     key_down = ftok("keyfile", 'Z');
     if (key_up == -1 || key_down == -1)
     {
-    if (key_up == -1 || key_down == -1)
-    {
         perror("ftok");
         exit(EXIT_FAILURE);
     }
 
     msgid_up = msgget(key_up, 0666 | IPC_CREAT);
     msgid_down = msgget(key_down, 0666 | IPC_CREAT);
-    if (msgid_up == -1 || msgid_down == -1)
-    {
     if (msgid_up == -1 || msgid_down == -1)
     {
         perror("msgget");
@@ -267,8 +252,6 @@ void receiveProcess()
     else
     push(ready_queue, p, prio_flag);
     buffer_down.mtype = 5;
-    if (msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1)
-    {
     if (msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1)
     {
         perror("msgsend");

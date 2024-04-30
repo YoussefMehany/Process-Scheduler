@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "headers.h"
+#include "circularQueue.h"
 #include "process_funcs.c"
 #include "priority_queue.h"
 
@@ -32,11 +33,10 @@ int algo;
 void receiveProcess();
 void createProcess(Process* p);
 void HPF();
+void RR(int quantum);
 void SRTN();
 void runPeak();
 void clearIpcs();
-// void rec_finish_pg();
-// void send_finish_scheduler();
 void handler2();
 void pg_finish();
 Process* stringtoProcess(char* str);
@@ -54,6 +54,7 @@ int main(int argc, char * argv[])
     prio_flag = (algo == 3);
     switch(algo) {
         case 1:
+            RR(3);
             break;
         case 2:
             SRTN();
@@ -65,6 +66,54 @@ int main(int argc, char * argv[])
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
    destroyClk(true);
+}
+
+void RR(int quantum)
+{
+    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int *shared_memory = (int *)shmat(shmid, (void *)0, 0);
+    int q = quantum;
+    ready_queue = (CircularQueue *)createQueue();
+    running_proc = NULL;
+    int currentTime = getClk();
+    while (1)
+    {
+        if (is_finish_pg && is_empty(ready_queue) && running_proc == NULL)
+            break;
+        if (running_proc == NULL)
+        {
+            if (!is_empty(ready_queue))
+            {
+                running_proc = getCurrent(ready_queue);
+                q = quantum;
+                if (running_proc->runtime != running_proc->remainingTime)
+                {
+                    kill(running_proc->pid, SIGCONT);
+                }
+                else
+                {
+                    createProcess(running_proc);
+                }
+                strcpy(running_proc->state, "Running");
+            }
+        }
+        else
+        {
+            running_proc->remainingTime = *shared_memory;
+            if (getClk() > currentTime)
+            {
+                currentTime = getClk();
+                q--;
+                if (q == 0)
+                {
+                    kill(running_proc->pid, SIGSTOP);
+                    strcpy(running_proc->state, "Ready");
+                    running_proc = NULL;
+                    moveToNext(ready_queue);
+                }
+            }
+        }
+    }
 }
 
 void HPF()
@@ -99,7 +148,6 @@ void SRTN() {
     shared_memory = (int *) shmat(shmid, (void *)0, 0);
     ready_queue = (Heap*)createHeap(); 
     while(1) {
-        // if(!is_finish_pg) rec_finish_pg();
         if(is_finish_pg && isEmpty(ready_queue) && running_proc == NULL) break;
         if(!isEmpty(ready_queue)) {
             if(running_proc) {
@@ -140,6 +188,7 @@ void handler2() {
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
     displayProcess(running_proc);
+    if(algo == 1) deleteCurrent(ready_queue);
     if(algo == 2) pop(ready_queue, prio_flag);
     running_proc = NULL;
 }
@@ -176,7 +225,9 @@ void receiveProcess() {
     Process *p = stringtoProcess(buffer_up.mtext);
     // INSTEAD OF DISPLAYING THE PROCESS PUT IN THE QUEUE ACCORDING TO THE CHOSEN ALGO
     //displayProcess(p);
-    push(ready_queue, p, prio_flag);
+    if(algo == 1)
+        enqueue(ready_queue, p);
+    else push(ready_queue, p, prio_flag);
     buffer_down.mtype = 5;
     if(msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1) {
         perror("msgsend");

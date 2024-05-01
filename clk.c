@@ -29,13 +29,13 @@ int main(int argc, char * argv[])
     shmid = shmget(SHKEY, 4, IPC_CREAT | 0644);
     if ((long)shmid == -1)
     {
-        perror("Error in creating shm!");
+        perror("Error in creating shm!\n");
         exit(-1);
     }
     shmaddr = (int *) shmat(shmid, (void *)0, 0);
     if ((long)shmaddr == -1)
     {
-        perror("Error in attaching the shm in clock!");
+        perror("Error in attaching the shm in clock!\n");
         exit(-1);
     }
     *shmaddr = clk; /* initialize shared memory */

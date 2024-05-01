@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
 
 void RR(int quantum)
 {
-    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int shmid = shmget(399, 5, IPC_CREAT | 0666);
     int *shared_memory = (int *)shmat(shmid, (void *)0, 0);
     int q = quantum;
     ready_queue = (CircularQueue *)createQueue();

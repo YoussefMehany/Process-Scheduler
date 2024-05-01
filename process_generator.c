@@ -13,7 +13,6 @@
 #include "headers.h"
 #include "process_funcs.h"
 
-
 int pid_Scheduler;
 
 struct finish_message_pg {
@@ -38,16 +37,16 @@ char* processToString(Process *process);
 int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
-    int algo;
-    printf("choose your alogrithm: (1)RR (2)SRTN (3)HPF\n");
-    scanf("%d", &algo);
-    initiateScheduler(algo);
-    initiateClkProcess();
-    initClk();
+    int algo = atoi(argv[1]);
     int numProcesses = GetNumProcesses("processes.txt");
     int waitSend = 1;
     Process** processes = malloc(numProcesses * sizeof(struct Process));
     readProcessesFromFile("processes.txt", processes);
+
+    initiateClkProcess();
+    initiateScheduler(algo);
+    
+    initClk();
     while(waitSend) {
         int currentTime = getClk();
         for (int i = 0; i < numProcesses; i++) {
@@ -63,7 +62,8 @@ int main(int argc, char * argv[])
     }
     kill(pid_Scheduler, SIGUSR2);
     waitpid(pid_Scheduler, NULL, 0);
-    return 0;
+    destroyClk(true);
+    exit(0);
 }
 
 void initiateScheduler(int algo)
@@ -127,7 +127,7 @@ void sendProcess(Process *process) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
-    printf("Sending process: %s\n", processStr);
+    fflush(stdout);
     memset(&buffer_up, 0, sizeof(buffer_up));
     memset(&buffer_down, 0, sizeof(buffer_down));
 
@@ -169,7 +169,5 @@ void clearResources() {
         perror("msgctl");
         exit(EXIT_FAILURE);
     }
-    destroyClk(false);
-    exit(0);   
 }
 

@@ -1,0 +1,180 @@
+body {
+  background-image: linear-gradient(to right, #2c2c2c 0%, #171717 100%);
+  font-family: "Poppins", sans-serif;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.output {
+  margin-top: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 35px; /* Add margin for spacing */
+}
+
+.custom-button {
+  width: 8em;
+  position: relative;
+  height: 3.5em;
+  border: 3px ridge #149cea;
+  outline: none;
+  background-color: transparent;
+  color: white;
+  transition: 1s;
+  border-radius: 0.3em;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.custom-button::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 3%;
+  width: 95%;
+  height: 40%;
+  transition: 0.3s;
+  background-color: inherit;
+
+  transform-origin: center;
+}
+
+.custom-button::before {
+  content: "";
+  transform-origin: center;
+  position: absolute;
+  top: 80%;
+  left: 3%;
+  width: 95%;
+  height: 40%;
+  background-color: inherit;
+  transition: 0.3s;
+}
+
+.custom-button:hover::before,
+.custom-button:hover::after {
+  transform: scale(0);
+}
+
+.custom-button:hover {
+  box-shadow: inset 0px 0px 25px #1479ea;
+}
+
+#algorithmTitle.btn-shine {
+  background-size: cover;
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  background: linear-gradient(to right, #9f9f9f 0, #fff 10%, #868686 20%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s infinite linear;
+  animation-fill-mode: forwards;
+  font-weight: 600;
+  font-size: 35px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0;
+  }
+  60% {
+    background-position: 180px;
+  }
+  100% {
+    background-position: 300px;
+  }
+}
+.welcome-text {
+  font-size: 3em; /* Adjust font size */
+  color: transparent; /* Text color becomes transparent */
+  background-image: linear-gradient(
+    to right,
+    #913dff 0%,
+    #4285f4 100%
+  ); /* Gradient definition */
+  text-align: center; /* Center alignment */
+  font-family: Arial, sans-serif; /* Change font family */
+  animation: revealText 1.5s ease-in-out forwards;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sub-text {
+  font-size: 1.5em; /* Adjust font size */
+  color: #fff; /* Set text color to white */
+  text-align: center; /* Center alignment */
+  font-weight: bold; /* Set bold font weight */
+  opacity: 0; /* Start invisible */
+  animation: revealSubText 1s ease-in-out forwards; /* Separate animation */
+  animation-delay: 1.5s; /* Delay by the duration of the welcome text animation */
+}
+
+@keyframes revealText {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes revealSubText {
+  from {
+    opacity: 0;
+    transform: translateX(-100%); /* Translate from left by 100% */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); /* Translate back to original position */
+  }
+}
+/* styles.css */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ddd; /* Light gray border */
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; 
+  color: black;
+}
+
+th {
+  background-color: grey; 
+  color: white; 
+}

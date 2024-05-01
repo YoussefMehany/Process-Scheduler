@@ -9,17 +9,18 @@ int main(int agrc, char * argv[])
 {
     initClk();
     int currentTime = getClk();
-    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int shmid = shmget(399, 5, IPC_CREAT | 0666);
     int* shared_memory = (int *) shmat(shmid, (void *)0, 0);
 
     int remainingtime = atoi(argv[1]);
 
     *shared_memory = remainingtime;
     while (remainingtime > 0) {
-        if(getClk() > currentTime) {
+        int time = getClk();
+        if(time > currentTime) {
             remainingtime--;
             *shared_memory = remainingtime;
-            currentTime = getClk();
+            currentTime = time;
         }
     }
     kill(getppid(), SIGPIPE);

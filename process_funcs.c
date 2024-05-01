@@ -3,6 +3,7 @@
 #include <string.h>
 #include "process_funcs.h"
 
+
 void displayProcess(const struct Process *p) {
     if(!p) return;
     printf("ID: %d\n", p->id);
@@ -13,6 +14,7 @@ void displayProcess(const struct Process *p) {
     printf("Waiting Time: %d\n", p->WaitingTime);
     printf("Remaining Time: %d\n", p->remainingTime);
     printf("State: %s\n", p->state);
+    fflush(stdout);
 }
 int GetNumProcesses (char *filename)
 {

@@ -25,3 +25,6 @@ c:
 GUI: 
 	# gcc -o GUI.out GUI.c $(pkg-config --cflags --libs gtk+-3.0)
 	./GUI.out
+
+js:
+	electron main.js

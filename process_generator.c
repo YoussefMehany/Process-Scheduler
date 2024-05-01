@@ -15,7 +15,7 @@
 
 
 int pid_Scheduler;
-
+int numProcesses;
 struct finish_message_pg {
     long mtype;    
     int finish;   
@@ -41,10 +41,11 @@ int main(int argc, char * argv[])
     int algo;
     printf("choose your alogrithm: (1)RR (2)SRTN (3)HPF\n");
     scanf("%d", &algo);
+    numProcesses = GetNumProcesses("processes.txt");
     initiateScheduler(algo);
     initiateClkProcess();
     initClk();
-    int numProcesses = GetNumProcesses("processes.txt");
+     
     int waitSend = 1;
     Process** processes = malloc(numProcesses * sizeof(struct Process));
     readProcessesFromFile("processes.txt", processes);
@@ -79,7 +80,9 @@ void initiateScheduler(int algo)
         args[0] = "./scheduler.out";
         args[1] = (char *)malloc(12);
         sprintf(args[1], "%d", algo);
-        args[2] = NULL;
+        args[2] = (char *)malloc(12);
+        sprintf(args[2], "%d", numProcesses);
+        args[3] = NULL;
         execvp(args[0], args);
         perror("execvp");
         exit(EXIT_FAILURE);

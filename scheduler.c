@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <math.h>
 #include "headers.h"
 #include "circularQueue.h"
 #include "process_funcs.c"
@@ -29,7 +30,12 @@ Process* running_proc;
 int is_finish_pg = 0;
 bool prio_flag = false;
 int algo;
-
+int TotalRunTime=0;
+int numProcesses;
+int TotalWaiting=0;
+int FirstArrival=-1;
+double*WTAs;
+int WTAsIndex=0;
 void receiveProcess();
 void createProcess(Process* p);
 void HPF();
@@ -39,6 +45,7 @@ void runPeak();
 void clearIpcs();
 void handler2();
 void pg_finish();
+void FinishStat();
 Process* stringtoProcess(char* str);
 
 
@@ -51,6 +58,8 @@ int main(int argc, char * argv[])
     signal(SIGINT, clearIpcs);
     initClk();
     algo = atoi(argv[1]);
+    numProcesses=atoi(argv[2]);
+    WTAs=(double *)malloc(numProcesses * sizeof(double));
     prio_flag = (algo == 3);
     switch(algo) {
         case 1:
@@ -63,6 +72,7 @@ int main(int argc, char * argv[])
             HPF();
             break;
     }
+    FinishStat();
    //TODO implement the scheduler :)
    //upon termination release the clock resources.
    destroyClk(true);
@@ -127,6 +137,10 @@ void HPF()
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
                 pop(ready_queue, prio_flag);
+                 char  Text[150];
+                sprintf(Text, "At Time %d process %d started arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
+                running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
+                WriteToFile(Text,"scheduler.log");
                 createProcess(running_proc);
                 strcpy(running_proc->state, "Running");
             }
@@ -137,8 +151,23 @@ void HPF()
 void runPeak() {
     running_proc = peak(ready_queue);
     if(running_proc->runtime != running_proc->remainingTime)
+    {
+        char  Text[150];
+        sprintf(Text, "At Time %d process %d resumed arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
+        running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
+        WriteToFile(Text,"scheduler.log");
         kill(running_proc->pid, SIGCONT);
-    else createProcess(running_proc);
+    }
+        
+    else 
+    {
+         char  Text[150];
+        sprintf(Text, "At Time %d process %d started arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
+        running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
+        WriteToFile(Text,"scheduler.log");
+        createProcess(running_proc);
+    }
+    
     strcpy(running_proc->state, "Running");
 }
 
@@ -156,6 +185,11 @@ void SRTN() {
             if(running_proc != peak(ready_queue)) {
                 if(running_proc) {
                     kill(running_proc->pid, SIGSTOP);
+                    char  Text[150];
+                    sprintf(Text, "At Time %d process %d stopped arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
+                    running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
+                    WriteToFile(Text,"scheduler.log");
+
                     strcpy(running_proc->state, "Ready");
                 }
                 runPeak();
@@ -187,6 +221,16 @@ void createProcess(Process* p) {
 void handler2() {
     strcpy(running_proc->state, "finished");
     running_proc->remainingTime = 0;
+    char  Text[150];
+    int cur_waiting=getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime);
+    double cur_WTA=(double)(getClk()-running_proc->arrival)/running_proc->runtime;
+    WTAs[WTAsIndex++]=cur_WTA;
+    TotalWaiting+=cur_waiting;
+    sprintf(Text, "At Time %d process %d finished arr %d total %d remaining %d wait %d TA %d  WTA %.3f \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
+    running_proc-> remainingTime,cur_waiting,
+    getClk()-running_proc->arrival,cur_WTA);
+    WriteToFile(Text,"scheduler.log");
+
     displayProcess(running_proc);
     if(algo == 1) deleteCurrent(ready_queue);
     if(algo == 2) pop(ready_queue, prio_flag);
@@ -223,6 +267,9 @@ void receiveProcess() {
         exit(EXIT_FAILURE);
     }
     Process *p = stringtoProcess(buffer_up.mtext);
+    TotalRunTime+=p->runtime;
+    if(FirstArrival==-1)
+    FirstArrival=p->arrival;
     // INSTEAD OF DISPLAYING THE PROCESS PUT IN THE QUEUE ACCORDING TO THE CHOSEN ALGO
     //displayProcess(p);
     if(algo == 1)
@@ -252,4 +299,24 @@ void clearIpcs() {
         exit(EXIT_FAILURE);
     }
     exit(0);
+}
+void FinishStat()
+{
+    int currentTime=getClk();
+    double TotalWTA=0;
+    double StdWTA=0;
+    for(int i=0;i<numProcesses;i++)
+        TotalWTA+=WTAs[i];
+    double AvgWTA=TotalWTA/numProcesses;
+
+    for(int i=0;i<numProcesses;i++)
+        StdWTA+=pow(WTAs[i]-AvgWTA,2);
+
+    StdWTA=pow(StdWTA/(numProcesses-1),.5);
+    char  Text[150];
+    sprintf(Text, "CPU utilization = %.2f %% \nAvg WTA = %.2f \nAvg Waiting = %.2f \nStd WTA = %.2f" ,(TotalRunTime/(double)(currentTime-FirstArrival))*100,AvgWTA,
+    (double)TotalWaiting/numProcesses, StdWTA);
+    WriteToFile(Text,"scheduler.perf");
+    free(WTAs);
+
 }

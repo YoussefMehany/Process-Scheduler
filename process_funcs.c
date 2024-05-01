@@ -3,7 +3,6 @@
 #include <string.h>
 #include "process_funcs.h"
 
-
 void displayProcess(const struct Process *p) {
     if(!p) return;
     printf("ID: %d\n", p->id);
@@ -55,4 +54,14 @@ void readProcessesFromFile(char *filename, struct Process **processes) {
     }
 
     fclose(file);
+}
+void WriteToFile(char text[],char filename[])
+{
+    FILE *outfile;
+    outfile = fopen(filename, "a");
+
+    if (outfile != NULL) {
+        fprintf(outfile, "%s\n", text);
+        fclose(outfile);
+    }
 }

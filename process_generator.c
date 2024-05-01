@@ -13,8 +13,9 @@
 #include "headers.h"
 #include "process_funcs.h"
 
-int pid_Scheduler;
 
+int pid_Scheduler;
+int numProcesses;
 struct finish_message_pg {
     long mtype;    
     int finish;   
@@ -79,7 +80,9 @@ void initiateScheduler(int algo)
         args[0] = "./scheduler.out";
         args[1] = (char *)malloc(12);
         sprintf(args[1], "%d", algo);
-        args[2] = NULL;
+        args[2] = (char *)malloc(12);
+        sprintf(args[2], "%d", numProcesses);
+        args[3] = NULL;
         execvp(args[0], args);
         perror("execvp");
         exit(EXIT_FAILURE);
@@ -128,6 +131,7 @@ void sendProcess(Process *process) {
         exit(EXIT_FAILURE);
     }
     fflush(stdout);
+    printf("Sending process: %s\n", processStr);
     memset(&buffer_up, 0, sizeof(buffer_up));
     memset(&buffer_down, 0, sizeof(buffer_down));
 

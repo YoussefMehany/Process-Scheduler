@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include "process_funcs.h"
 
@@ -64,4 +65,15 @@ void WriteToFile(char text[],char filename[])
         fprintf(outfile, "%s\n", text);
         fclose(outfile);
     }
+}
+
+void Clear_File(char filename[]){
+     FILE *file = fopen(filename, "a");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+    truncate(filename, 0);
+
+    fclose(file);
 }

@@ -59,6 +59,8 @@ int main(int argc, char * argv[])
     initClk();
     algo = atoi(argv[1]);
     numProcesses=atoi(argv[2]);
+    Clear_File("scheduler.perf");
+    Clear_File("scheduler.log");
     WTAs=(double *)malloc(numProcesses * sizeof(double));
     prio_flag = (algo == 3);
     switch(algo) {
@@ -158,7 +160,6 @@ void runPeak() {
         WriteToFile(Text,"scheduler.log");
         kill(running_proc->pid, SIGCONT);
     }
-        
     else 
     {
          char  Text[150];
@@ -173,7 +174,7 @@ void runPeak() {
 
 void SRTN() {
     running_proc = NULL;
-    int shmid = shmget(399, 4, IPC_CREAT | 0666);
+    int shmid = shmget(399, 5, IPC_CREAT | 0666);
     shared_memory = (int *) shmat(shmid, (void *)0, 0);
     ready_queue = (Heap*)createHeap(); 
     while(1) {

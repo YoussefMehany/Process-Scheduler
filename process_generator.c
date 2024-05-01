@@ -39,7 +39,7 @@ int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
     int algo = atoi(argv[1]);
-    int numProcesses = GetNumProcesses("processes.txt");
+    numProcesses = GetNumProcesses("processes.txt");
     int waitSend = 1;
     Process** processes = malloc(numProcesses * sizeof(struct Process));
     readProcessesFromFile("processes.txt", processes);

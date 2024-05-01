@@ -54,7 +54,7 @@ int main(int argc, char * argv[])
     prio_flag = (algo == 3);
     switch(algo) {
         case 1:
-            RR(3);
+            RR(1);
             break;
         case 2:
             SRTN();
@@ -72,10 +72,10 @@ void RR(int quantum)
 {
     int shmid = shmget(399, 5, IPC_CREAT | 0666);
     int *shared_memory = (int *)shmat(shmid, (void *)0, 0);
-    int q = quantum;
+    int q;
     ready_queue = (CircularQueue *)createQueue();
     running_proc = NULL;
-    int currentTime = getClk();
+    int currentTime;
     while (1)
     {
         if (is_finish_pg && is_empty(ready_queue) && running_proc == NULL)
@@ -86,6 +86,7 @@ void RR(int quantum)
             {
                 running_proc = getCurrent(ready_queue);
                 q = quantum;
+                currentTime = getClk();
                 if (running_proc->runtime != running_proc->remainingTime)
                 {
                     kill(running_proc->pid, SIGCONT);
@@ -99,17 +100,21 @@ void RR(int quantum)
         }
         else
         {
-            running_proc->remainingTime = *shared_memory;
-            if (getClk() > currentTime)
+            if (*shared_memory > 1)
             {
-                currentTime = getClk();
-                q--;
-                if (q == 0)
+                if (getClk() > currentTime)
                 {
-                    kill(running_proc->pid, SIGSTOP);
-                    strcpy(running_proc->state, "Ready");
-                    running_proc = NULL;
-                    moveToNext(ready_queue);
+                    //displayProcess(running_proc);
+                    currentTime = getClk();
+                    running_proc->remainingTime = *shared_memory;
+                    q--;
+                    if (q == 0)
+                    {
+                        kill(running_proc->pid, SIGSTOP);
+                        strcpy(running_proc->state, "Ready");
+                        running_proc = NULL;
+                        moveToNext(ready_queue);
+                    }
                 }
             }
         }

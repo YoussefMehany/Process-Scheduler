@@ -46,6 +46,7 @@ void clearIpcs();
 void handler2();
 void pg_finish();
 void FinishStat();
+void writetoOutput(Process* p, char* str);
 Process* stringtoProcess(char* str);
 
 
@@ -139,7 +140,7 @@ void HPF()
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
                 pop(ready_queue, prio_flag);
-                 char  Text[150];
+                char Text[150];
                 sprintf(Text, "At Time %d process %d started arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
                 running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
                 WriteToFile(Text,"scheduler.log");
@@ -152,23 +153,15 @@ void HPF()
 
 void runPeak() {
     running_proc = peak(ready_queue);
-    if(running_proc->runtime != running_proc->remainingTime)
-    {
-        char  Text[150];
-        sprintf(Text, "At Time %d process %d resumed arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
-        running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
-        WriteToFile(Text,"scheduler.log");
+    if(running_proc->runtime != running_proc->remainingTime) {
+        writetoOutput(running_proc, "resumed");
+        kill(running_proc->pid, SIGUSR1);
         kill(running_proc->pid, SIGCONT);
     }
-    else 
-    {
-         char  Text[150];
-        sprintf(Text, "At Time %d process %d started arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
-        running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
-        WriteToFile(Text,"scheduler.log");
+    else {
+        writetoOutput(running_proc, "started");
         createProcess(running_proc);
     }
-    
     strcpy(running_proc->state, "Running");
 }
 
@@ -186,17 +179,20 @@ void SRTN() {
             if(running_proc != peak(ready_queue)) {
                 if(running_proc) {
                     kill(running_proc->pid, SIGSTOP);
-                    char  Text[150];
-                    sprintf(Text, "At Time %d process %d stopped arr %d total %d remaining %d wait %d  \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
-                    running_proc-> remainingTime,getClk()-(running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime));
-                    WriteToFile(Text,"scheduler.log");
-
+                    writetoOutput(running_proc, "stopped");
                     strcpy(running_proc->state, "Ready");
                 }
                 runPeak();
             }
         }
     }
+}
+
+void writetoOutput(Process* p, char* str) {
+    char Text[150];
+    sprintf(Text, "At Time %d process %d %s arr %d total %d remaining %d wait %d  \n", getClk(), p->id, str, running_proc->arrival, running_proc->runtime,
+    p->remainingTime, getClk() - (p->arrival) - (p->runtime) + (p->remainingTime));
+    WriteToFile(Text,"scheduler.log");
 }
 
 void createProcess(Process* p) {

@@ -28,3 +28,6 @@ GUI:
 
 js:
 	electron main.js
+
+youssef:
+	git config --global core.autocrlf input

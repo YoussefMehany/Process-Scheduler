@@ -29,7 +29,7 @@ struct msgbuf {
 
 void clearResources();
 void sendProcess(Process* process);
-void initiateScheduler(int algo);
+void initiateScheduler(int algo, int quantum);
 void initiateClkProcess();
 char* processToString(Process *process);
 
@@ -39,13 +39,16 @@ int main(int argc, char * argv[])
 {
     signal(SIGINT, clearResources);
     int algo = atoi(argv[1]);
-    numProcesses = GetNumProcesses("processes.txt");
+    int quantum = atoi(argv[2]);
+    char* str = algo == 1 ? argv[3] : argv[2];
+    numProcesses = GetNumProcesses(str);
     int waitSend = 1;
+
     Process** processes = malloc(numProcesses * sizeof(struct Process));
-    readProcessesFromFile("processes.txt", processes);
+    readProcessesFromFile(str, processes);
 
     initiateClkProcess();
-    initiateScheduler(algo);
+    initiateScheduler(algo, quantum);
     
     initClk();
     while(waitSend) {
@@ -67,7 +70,7 @@ int main(int argc, char * argv[])
     exit(0);
 }
 
-void initiateScheduler(int algo)
+void initiateScheduler(int algo, int quantum)
 {
     pid_t pid = fork();
     pid_Scheduler = pid;
@@ -76,13 +79,14 @@ void initiateScheduler(int algo)
         perror("fork");
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
-        char* args[3];
+        char* args[4];
         args[0] = "./scheduler.out";
         args[1] = (char *)malloc(12);
         sprintf(args[1], "%d", algo);
         args[2] = (char *)malloc(12);
         sprintf(args[2], "%d", numProcesses);
-        args[3] = NULL;
+        args[3] = (char *)malloc(12);
+        sprintf(args[3], "%d", quantum); 
         execvp(args[0], args);
         perror("execvp");
         exit(EXIT_FAILURE);

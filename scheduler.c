@@ -30,12 +30,12 @@ Process* running_proc;
 int is_finish_pg = 0;
 bool prio_flag = false;
 int algo;
-int TotalRunTime=0;
+int TotalRunTime = 0;
 int numProcesses;
-int TotalWaiting=0;
-int FirstArrival=-1;
+int TotalWaiting = 0;
+int FirstArrival =- 1;
 double*WTAs;
-int WTAsIndex=0;
+int WTAsIndex = 0;
 void receiveProcess();
 void createProcess(Process* p);
 void HPF();
@@ -60,13 +60,14 @@ int main(int argc, char * argv[])
     initClk();
     algo = atoi(argv[1]);
     numProcesses = atoi(argv[2]);
+    int quantum = atoi(argv[3]);
     Clear_File("scheduler.perf");
     Clear_File("scheduler.log");
     WTAs=(double *)malloc(numProcesses * sizeof(double));
     prio_flag = (algo == 3);
     switch(algo) {
         case 1:
-            RR(3);
+            RR(quantum);
             break;
         case 2:
             SRTN();

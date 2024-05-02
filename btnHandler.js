@@ -8,8 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   rrBtn.addEventListener("click", () => {
     console.log("RR Button clicked");
-    ipcRenderer.send("submit", "1");
-    ipcRenderer.send("gototaskManager");
+    ipcRenderer.send("gotoquantumInput");
   });
 
   srtnBtn.addEventListener("click", () => {

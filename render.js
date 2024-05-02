@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const gotoAlgorithmBtn = document.getElementById("gotoAlgorithmBtn");
 
   gotoAlgorithmBtn.addEventListener("click", () => {
-    ipcRenderer.send("gotoAlgorithmSelection");
+    ipcRenderer.send("gotoInputFile");
   });
-
 });

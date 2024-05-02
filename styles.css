@@ -80,7 +80,6 @@ body {
   top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #fff;
   background: linear-gradient(to right, #9f9f9f 0, #fff 10%, #868686 20%);
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -94,13 +93,13 @@ body {
 
 @keyframes shine {
   0% {
-    background-position: 0;
+    background-position: -10px;
   }
   60% {
     background-position: 180px;
   }
   100% {
-    background-position: 300px;
+    background-position: 320px;
   }
 }
 .welcome-text {
@@ -154,13 +153,8 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  color: white;
-}
-
-table,
-th,
-td {
-  border: 1px solid #ddd; /* Light gray border */
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
 }
 
 th,
@@ -168,13 +162,15 @@ td {
   padding: 8px;
   text-align: left;
 }
-
-tr:nth-child(even) {
-  background-color: #f9f9f9; 
-  color: black;
+tr ~ tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 0px;
 }
-
 th {
-  background-color: grey; 
-  color: white; 
+  background-color: #9f9f9f;
+  color: white;
+  opacity: 0.8;
+}
+tr {
+  text-transform: capitalize;
 }

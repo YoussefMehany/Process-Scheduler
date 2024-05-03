@@ -79,7 +79,7 @@ void initiateScheduler(int algo, int quantum)
         perror("fork");
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
-        char* args[4];
+        char* args[5];
         args[0] = "./scheduler.out";
         args[1] = (char *)malloc(12);
         sprintf(args[1], "%d", algo);
@@ -87,6 +87,7 @@ void initiateScheduler(int algo, int quantum)
         sprintf(args[2], "%d", numProcesses);
         args[3] = (char *)malloc(12);
         sprintf(args[3], "%d", quantum); 
+        args[4] = NULL;
         execvp(args[0], args);
         perror("execvp");
         exit(EXIT_FAILURE);

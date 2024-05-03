@@ -17,7 +17,7 @@ run:
 	./process_generator.out
 
 runv:
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./process_generator.out
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./process_generator.out 3 "processes.txt"
 c:
 	ipcrm -a
 	clear

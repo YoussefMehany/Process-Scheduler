@@ -110,7 +110,7 @@ void initiateClkProcess()
 
 char *processToString(Process *process) {
     char *str = malloc(30 * sizeof(char));
-    sprintf(str, "%d %d %d %d %d %d %d %s", process->id, process->arrival, process->startTime, process->runtime, process->priority, process->WaitingTime, process->remainingTime, process->state);
+    sprintf(str, "%d %d %d %d %d %d %d %d %s", process->id, process->arrival, process->startTime, process->runtime, process->priority, process->WaitingTime, process->remainingTime, process->memorySize, process->state);
     return str;
 }
 

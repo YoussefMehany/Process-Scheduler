@@ -24,8 +24,8 @@ struct finish_message_pg {
     long mtype;     
     int finish;      
 };
-
 void* ready_queue;
+Heap* memory_wait;
 int* shared_memory;
 Process* running_proc;
 int is_finish_pg = 0;
@@ -51,7 +51,9 @@ void finishProcess();
 void writetoOutput(Process* p, char* str);
 Process* stringtoProcess(char* str);
 FILE* stat_file;
-FILE* log_file;
+FILE* schedLog_file;
+FILE* memLog_file;
+Memory* memory;
 int sem;
 
 
@@ -62,8 +64,12 @@ int main(int argc, char * argv[])
     signal(SIGUSR2, pg_finish);
     signal(SIGPIPE, handler2);
     signal(SIGINT, clearIpcs);
+    
+    memory = createMemory(1024, 0, 1023, NULL);
+    memory_wait = createHeap();
 
-    log_file = openFile("scheduler.log");
+    schedLog_file = openFile("scheduler.log");
+    memLog_file = openFile("memory.log");
     algo = atoi(argv[1]);
     numProcesses = atoi(argv[2]);
     int quantum = atoi(argv[3]);
@@ -149,10 +155,10 @@ void HPF()
             if(running_proc == NULL) {
                 running_proc = peak(ready_queue);
                 pop(ready_queue, prio_flag);
+                createProcess(running_proc);
                 writetoOutput(running_proc, "Started");
                 strcpy(running_proc->state, "Running");
                 displayProcess(running_proc);
-                createProcess(running_proc);
             }
         }
     }
@@ -191,7 +197,7 @@ void SRTN() {
                 if(!peak(ready_queue)) continue;
                 if(running_proc) {
                     kill(running_proc->pid, SIGSTOP);
-                    writetoOutput(running_proc, "stopped");
+                    writetoOutput(running_proc, "Stopped");
                     strcpy(running_proc->state, "Stopped");
                     displayProcess(running_proc);
                 }
@@ -211,10 +217,19 @@ void writetoOutput(Process* p, char* str) {
         char Text[150];
         sprintf(Text, "At Time %d process %d %s arr %d total %d remaining %d wait %d  \n", clk, p->id, str, running_proc->arrival, running_proc->runtime,
         p->remainingTime, p->WaitingTime);
-        WriteToFile(Text, log_file);
+        WriteToFile(Text, schedLog_file);
         up(sem);
         exit(0);
     }
+}
+
+void memoryOutput(Process* p, char* str) {
+    int clk = getClk();
+    int curWaiting = clk - (p->arrival) - (p->runtime) + (p->remainingTime);
+    p->WaitingTime = curWaiting;
+    char Text[150];
+    sprintf(Text, "At Time %d %s %d bytes for process %d from %d to %d\n", clk, str, p->memorySize, p->id, p->memory->start, p->memory->end);
+    WriteToFile(Text, memLog_file);
 }
 
 void createProcess(Process* p) {
@@ -246,7 +261,7 @@ void finishProcess() {
     sprintf(Text, "At Time %d process %d finished arr %d total %d remaining %d wait %d TA %d  WTA %.3f \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
     running_proc-> remainingTime, cur_waiting, getClk() - running_proc->arrival, cur_WTA);
     running_proc->WaitingTime = cur_waiting;
-    WriteToFile(Text, log_file);
+    WriteToFile(Text, schedLog_file);
 }
 
 void handler2() {
@@ -254,14 +269,30 @@ void handler2() {
     running_proc->remainingTime = 0;
     finishProcess();
     displayProcess(running_proc);
+
+    memoryOutput(running_proc, "freed");
+    DeleteMemory(memory, running_proc->id);
+
     if(algo == 1) deleteCurrent(ready_queue);
     if(algo == 2) pop(ready_queue, prio_flag);
+    while(!isEmpty(memory_wait)) {
+        Process* p = peak(memory_wait);
+        Memory* processMemory = InsertMemory(memory, p->memorySize, p->id);
+        if(processMemory) {
+            p->memory = processMemory;
+            memoryOutput(p, "allocated");
+            if(algo == 1)
+                enqueue(ready_queue, p);
+            else push(ready_queue, p, prio_flag);
+            pop(memory_wait, 2);
+        }else break;
+    }
     running_proc = NULL;
 }
 
 Process* stringtoProcess(char* str) {
     Process* p = malloc(sizeof(Process));
-    sscanf(str, "%d %d %d %d %d %d %d %s", &p->id, &p->arrival, &p->startTime, &p->runtime, &p->priority, &p->WaitingTime, &p->remainingTime, p->state);
+    sscanf(str, "%d %d %d %d %d %d %d %d %s", &p->id, &p->arrival, &p->startTime, &p->runtime, &p->priority, &p->WaitingTime, &p->remainingTime, &p->memorySize, p->state);
     return p;
 }
 
@@ -292,9 +323,17 @@ void receiveProcess() {
     TotalRunTime += p->runtime;
     if(FirstArrival == -1)
     FirstArrival = p->arrival;
-    if(algo == 1)
-        enqueue(ready_queue, p);
-    else push(ready_queue, p, prio_flag);
+
+    Memory* processMemory = InsertMemory(memory, p->memorySize, p->id);
+    if(processMemory) {
+        p->memory = processMemory;
+        memoryOutput(p, "allocated");
+        if(algo == 1)
+            enqueue(ready_queue, p);
+        else push(ready_queue, p, prio_flag);
+    }else 
+        push(memory_wait, p, 2);
+    
     buffer_down.mtype = 5;
     if(msgsnd(msgid_down, &buffer_down, sizeof(buffer_down.mtext), 5) == -1) {
         perror("msgsend");
@@ -306,8 +345,8 @@ void pg_finish() {
     is_finish_pg = 1;
 }
 
-
 void clearIpcs() {
+    wait(NULL);
     int shmid = shmget(399, 5, IPC_CREAT | 0666);
     shmdt(shared_memory);
     if (shmid == -1) {
@@ -318,6 +357,7 @@ void clearIpcs() {
         perror("shmctl");
         exit(EXIT_FAILURE);
     }
+    DestroyMemory(&memory);
     dis_sem(sem);
     exit(0);
 }

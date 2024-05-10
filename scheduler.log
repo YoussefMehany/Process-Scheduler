@@ -1,20 +1,52 @@
-At Time 1 process 1 Started arr 1 total 12 remaining 12 wait 0  
+At Time 1 process 1 Started arr 1 total 1 remaining 1 wait 0  
 
-At Time 13 process 1 finished arr 1 total 12 remaining 0 wait 0 TA 12  WTA 1.000 
+At Time 2 process 1 finished arr 1 total 1 remaining 0 wait 0 TA 1  WTA 1.000 
 
-At Time 13 process 2 Started arr 10 total 4 remaining 4 wait 3  
+At Time 2 process 2 Started arr 1 total 1 remaining 1 wait 1  
 
-At Time 17 process 2 finished arr 10 total 4 remaining 0 wait 3 TA 7  WTA 1.750 
+At Time 3 process 2 finished arr 1 total 1 remaining 0 wait 1 TA 2  WTA 2.000 
 
-At Time 20 process 3 Started arr 20 total 7 remaining 7 wait 0  
+At Time 3 process 3 Started arr 1 total 1 remaining 1 wait 2  
 
-At Time 27 process 3 finished arr 20 total 7 remaining 0 wait 0 TA 7  WTA 1.000 
+At Time 4 process 3 finished arr 1 total 1 remaining 0 wait 2 TA 3  WTA 3.000 
 
-At Time 27 process 4 Started arr 23 total 5 remaining 5 wait 4  
+At Time 4 process 4 Started arr 1 total 1 remaining 1 wait 3  
 
-At Time 32 process 4 finished arr 23 total 5 remaining 0 wait 4 TA 9  WTA 1.800 
+At Time 5 process 4 finished arr 1 total 1 remaining 0 wait 3 TA 4  WTA 4.000 
 
-At Time 34 process 5 Started arr 34 total 3 remaining 3 wait 0  
+At Time 5 process 6 Started arr 1 total 1 remaining 1 wait 4  
 
-At Time 37 process 5 finished arr 34 total 3 remaining 0 wait 0 TA 3  WTA 1.000 
+At Time 6 process 6 finished arr 1 total 1 remaining 0 wait 4 TA 5  WTA 5.000 
+
+At Time 6 process 7 Started arr 1 total 1 remaining 1 wait 5  
+
+At Time 7 process 7 finished arr 1 total 1 remaining 0 wait 5 TA 6  WTA 6.000 
+
+At Time 7 process 8 Started arr 1 total 1 remaining 1 wait 6  
+
+At Time 8 process 8 finished arr 1 total 1 remaining 0 wait 6 TA 7  WTA 7.000 
+
+At Time 8 process 5 Started arr 1 total 1 remaining 1 wait 7  
+
+At Time 9 process 5 finished arr 1 total 1 remaining 0 wait 7 TA 8  WTA 8.000 
+
+At Time 9 process 9 Started arr 3 total 2 remaining 2 wait 6  
+
+At Time 10 process 9 Stopped arr 3 total 2 remaining 1 wait 6  
+
+At Time 10 process 10 Started arr 5 total 5 remaining 5 wait 5  
+
+At Time 11 process 10 Stopped arr 5 total 5 remaining 4 wait 5  
+
+At Time 11 process 9 Resumed arr 3 total 2 remaining 1 wait 7  
+
+At Time 12 process 9 Stopped arr 3 total 2 remaining 0 wait 7  
+
+At Time 12 process 10 Resumed arr 5 total 5 remaining 4 wait 6  
+
+At Time 13 process 10 Stopped arr 5 total 5 remaining 3 wait 6  
+
+At Time 13 process 9 finished arr 3 total 2 remaining 0 wait 8 TA 10  WTA 5.000 
+
+At Time 13 process 9 Resumed arr 3 total 2 remaining 0 wait 8  
 

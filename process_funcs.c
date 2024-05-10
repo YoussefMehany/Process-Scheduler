@@ -26,7 +26,7 @@ int GetNumProcesses(char *filename)
     }
     return numProcesses;
 }
-void initProcess(struct Process *p, int id, int arrival, int starttime, int runtime, int priority, int WaitingTime, int remainingTime, const char *state) {
+void initProcess(struct Process *p, int id, int arrival, int starttime, int runtime, int priority, int WaitingTime, int remainingTime, const char *state, int memorySize) {
     if(!p) return;
     p->id = id;
     p->arrival = arrival;
@@ -36,20 +36,21 @@ void initProcess(struct Process *p, int id, int arrival, int starttime, int runt
     p->WaitingTime = WaitingTime;
     p->remainingTime = remainingTime;
     p->Sent = 0;
+    p->memorySize = memorySize;
     strcpy(p->state, state);
 }
 
 void readProcessesFromFile(char *filename, struct Process **processes) {
-    FILE* file = fopen(filename,"r");;
+    FILE* file = fopen(filename,"r");
     char line[100];
     int index = 0;
     fseek(file, 0, SEEK_SET);
     fgets(line, sizeof(line), file);
     while (fgets(line, sizeof(line), file)) {
-        int id, arrival, runtime, priority;
-        sscanf(line, "%d %d %d %d", &id, &arrival, &runtime, &priority);
+        int id, arrival, runtime, priority, memorySize;
+        sscanf(line, "%d %d %d %d %d", &id, &arrival, &runtime, &priority, &memorySize);
         processes[index] = malloc(sizeof(struct Process));
-        initProcess(processes[index], id, arrival, 0, runtime, priority, 0, runtime, "waiting");
+        initProcess(processes[index], id, arrival, 0, runtime, priority, 0, runtime, "waiting", memorySize);
         index++;
     }
 
@@ -62,7 +63,6 @@ FILE* openFile(char filename[]) {
     return outfile;
 }
 
-
 void WriteToFile(char text[], FILE* file)
 {
     if (file != NULL) {
@@ -70,7 +70,6 @@ void WriteToFile(char text[], FILE* file)
         fflush(file);
     }
 }
-
 
 void closeFile(FILE* file) {
     fclose(file);

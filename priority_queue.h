@@ -16,12 +16,13 @@ typedef struct Heap {
 } Heap;
 
 Heap* createHeap();
-void destroyHeap(Heap* heap);
+void destroyHeap(Heap** heap);
 void resize(Heap* heap);
 bool isEmpty(Heap* heap);
-void heapify(Heap* heap, int idx,int ispriority);
-void push(Heap* heap, Process* newProcess,int ispriority);
+int getRequested(Process* process, int key);
+void heapify(Heap* heap, int idx, int key);
+void push(Heap* heap, Process* newProcess, int key);
 Process* peak(Heap* heap);
-void pop(Heap* heap,int ispriority);
+void pop(Heap* heap, int key);
 
 #endif

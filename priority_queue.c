@@ -8,44 +8,36 @@ void resize(Heap* heap) {
         exit(1);
     }
 }
+int getRequested(Process* process, int key) {
+    if(key == 0) {
+        return process->remainingTime;
+    }else if(key == 1) {
+        return process->priority;
+    }else {
+        return process->memorySize;
+    }
+}
 
-void heapify(Heap* heap, int idx, int ispriority) {
+void heapify(Heap* heap, int idx, int key) {
     if (idx > heap->N) return;
     int left = 2 * idx;
     int right = 2 * idx + 1;
     int smallest = idx;
-    if(ispriority == 0)
-    {
-        if (left <= heap->N && heap->tree[left]->remainingTime < heap->tree[smallest]->remainingTime) {
-            smallest = left;
-        }
-        if (right <= heap->N && heap->tree[right]->remainingTime < heap->tree[smallest]->remainingTime) {
-            smallest = right;
-        }
-        if (smallest != idx) {
-            Process* temp = heap->tree[smallest];
-            heap->tree[smallest] = heap->tree[idx];
-            heap->tree[idx] = temp;
-            heapify(heap, smallest, ispriority);
-        }
-    }
-    else{
-        if (left <= heap->N && heap->tree[left]->priority < heap->tree[smallest]->priority) {
-            smallest = left;
-        }
-        if (right <= heap->N && heap->tree[right]->priority < heap->tree[smallest]->priority) {
-            smallest = right;
-        }
-        if (smallest != idx) {
-            Process* temp = heap->tree[smallest];
-            heap->tree[smallest] = heap->tree[idx];
-            heap->tree[idx] = temp;
-            heapify(heap, smallest, ispriority);
-        }
+
+    if (left <= heap->N && (getRequested(heap->tree[left], key) < getRequested(heap->tree[smallest], key) || 
+    getRequested(heap->tree[left], key) == getRequested(heap->tree[smallest], key) && heap->tree[left]->id < heap->tree[smallest]->id)) smallest = left;
+    if (right <= heap->N && (getRequested(heap->tree[right], key) < getRequested(heap->tree[smallest], key) || 
+    getRequested(heap->tree[right], key) == getRequested(heap->tree[smallest], key) && heap->tree[right]->id < heap->tree[smallest]->id)) smallest = right;
+    if (smallest != idx) {
+        Process* temp = heap->tree[smallest];
+        heap->tree[smallest] = heap->tree[idx];
+        heap->tree[idx] = temp;
+        heapify(heap, smallest, key);
     }
 }
 
-void push(Heap* heap, Process* newProcess, int ispriority) {
+
+void push(Heap* heap, Process* newProcess, int key) {
     if (heap->N + 1 >= heap->capacity) {
         resize(heap);
     }
@@ -53,21 +45,13 @@ void push(Heap* heap, Process* newProcess, int ispriority) {
     heap->tree[heap->N] = newProcess;
     heap->count++;
     int current = heap->N;
-    if(ispriority == 0){
-        while (current > 1 && heap->tree[current]->remainingTime < heap->tree[current / 2]->remainingTime) {
-            Process* temp = heap->tree[current];
-            heap->tree[current] = heap->tree[current / 2];
-            heap->tree[current / 2] = temp;
-            current /= 2;
-        }
-    }
-    else{
-        while (current > 1 && heap->tree[current]->priority < heap->tree[current / 2]->priority) {
-            Process* temp = heap->tree[current];
-            heap->tree[current] = heap->tree[current / 2];
-            heap->tree[current / 2] = temp;
-            current /= 2;
-        }
+
+    while (current > 1 && (getRequested(heap->tree[current], key) < getRequested(heap->tree[current / 2], key) ||
+     getRequested(heap->tree[current], key) == getRequested(heap->tree[current / 2], key) && heap->tree[current]->id < heap->tree[current / 2]->id)) {
+        Process* temp = heap->tree[current];
+        heap->tree[current] = heap->tree[current / 2];
+        heap->tree[current / 2] = temp;
+        current /= 2;
     }
 }
 
@@ -79,10 +63,10 @@ bool isEmpty(Heap* heap) {
     return !heap->count;
 }
 
-void pop(Heap* heap, int ispiriority) {
+void pop(Heap* heap, int key) {
     heap->tree[1] = heap->tree[heap->N--];
     heap->count--;
-    heapify(heap, 1, ispiriority);
+    heapify(heap, 1, key);
 }
 
 Heap* createHeap() {
@@ -103,7 +87,12 @@ Heap* createHeap() {
     return heap;
 }
 
-void destroyHeap(Heap* heap) {
-    free(heap->tree);
-    free(heap);
+void destroyHeap(Heap** heap) {
+    if (heap == NULL || *heap == NULL) {
+        return;
+    }
+
+    free((*heap)->tree);
+    free(*heap);
+    *heap = NULL; 
 }

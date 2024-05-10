@@ -26,14 +26,14 @@ int init_sema(char c)
 {
     key_t key_id = ftok("keyfile", c);
     int s = semget(key_id, 1, 0666 | IPC_CREAT);
-    if(s == -1)return -1;
+    if(s == -1) return -1;
     return s;
 }
 
-void set_val(int s,int val)
+void set_val(int s, int val)
 {
     union Semun semun1;
-    semun1.val=val;
+    semun1.val = val;
     if (semctl(s, 0, SETVAL, semun1) == -1)
     {
         perror("Error in semctl");

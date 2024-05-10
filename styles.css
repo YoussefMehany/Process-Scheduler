@@ -1,5 +1,5 @@
 body {
-  background-image: linear-gradient(to right, #2c2c2c 0%, #171717 100%);
+  background-image: url("bgImg.png");
   font-family: "Poppins", sans-serif;
 }
 ::-webkit-scrollbar {
@@ -103,15 +103,15 @@ body {
   }
 }
 .welcome-text {
-  font-size: 3em; /* Adjust font size */
-  color: transparent; /* Text color becomes transparent */
+  font-size: 3em; 
+  color: transparent;
   background-image: linear-gradient(
     to right,
-    #913dff 0%,
-    #4285f4 100%
-  ); /* Gradient definition */
-  text-align: center; /* Center alignment */
-  font-family: Arial, sans-serif; /* Change font family */
+    #8532ff 0%,
+    #d455ff 100% 
+  );
+  text-align: center;
+  font-family: Arial, sans-serif; 
   animation: revealText 1.5s ease-in-out forwards;
   -webkit-background-clip: text;
   background-clip: text;
@@ -119,13 +119,13 @@ body {
 }
 
 .sub-text {
-  font-size: 1.5em; /* Adjust font size */
-  color: #fff; /* Set text color to white */
-  text-align: center; /* Center alignment */
-  font-weight: bold; /* Set bold font weight */
-  opacity: 0; /* Start invisible */
-  animation: revealSubText 1s ease-in-out forwards; /* Separate animation */
-  animation-delay: 1.5s; /* Delay by the duration of the welcome text animation */
+  font-size: 1.5em;
+  color: #fff; 
+  text-align: center; 
+  font-weight: bold; 
+  opacity: 0; 
+  animation: revealSubText 1s ease-in-out forwards;
+  animation-delay: 1.5s; 
 }
 
 @keyframes revealText {
@@ -142,19 +142,19 @@ body {
 @keyframes revealSubText {
   from {
     opacity: 0;
-    transform: translateX(-100%); /* Translate from left by 100% */
+    transform: translateX(-100%); 
   }
   to {
     opacity: 1;
-    transform: translateX(0); /* Translate back to original position */
+    transform: translateX(0); 
   }
 }
-/* styles.css */
 table {
   width: 100%;
   border-collapse: collapse;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255, 255, 255);
   font-weight: 600;
+  font-size: 1.1em;
 }
 
 th,
@@ -163,11 +163,11 @@ td {
   text-align: left;
 }
 tr ~ tr {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 10px 0px;
+  border-top: 1px solid rgb(255, 255, 255);
+  padding: 15px 0px;
 }
 th {
-  background-color: #9f9f9f;
+  background-color: #4682b4;
   color: white;
   opacity: 0.8;
 }

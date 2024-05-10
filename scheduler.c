@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <math.h>
+#include "semaphore.h"
 #include "headers.h"
 #include "circularQueue.h"
 #include "process_funcs.c"
@@ -17,7 +18,7 @@
 
 struct msgbuf {
     long mtype;
-    char mtext[30];
+    char mtext[100];
 };
 struct finish_message_pg {
     long mtype;     
@@ -45,26 +46,33 @@ void runPeak();
 void clearIpcs();
 void handler2();
 void pg_finish();
-void FinishStat();
+void finishStat();
+void finishProcess();
 void writetoOutput(Process* p, char* str);
 Process* stringtoProcess(char* str);
-
+FILE* stat_file;
+FILE* log_file;
+int sem;
 
 
 int main(int argc, char * argv[])
 {
+    initClk();
     signal(SIGUSR1, receiveProcess);
     signal(SIGUSR2, pg_finish);
     signal(SIGPIPE, handler2);
     signal(SIGINT, clearIpcs);
-    initClk();
+
+    log_file = openFile("scheduler.log");
     algo = atoi(argv[1]);
     numProcesses = atoi(argv[2]);
     int quantum = atoi(argv[3]);
-    Clear_File("scheduler.perf");
-    Clear_File("scheduler.log");
     WTAs = (double *)malloc(numProcesses * sizeof(double));
     prio_flag = (algo == 3);
+    
+    sem = init_sema('M');
+    set_val(sem, 1);
+
     switch(algo) {
         case 1:
             RR(quantum);
@@ -76,7 +84,7 @@ int main(int argc, char * argv[])
             HPF();
             break;
     }
-   FinishStat();
+   finishStat();
    destroyClk(true);
 }
 
@@ -160,6 +168,7 @@ void runPeak() {
         displayProcess(running_proc);
     }
     else {
+        *shared_memory = running_proc->runtime;
         createProcess(running_proc);
         writetoOutput(running_proc, "Started");
         strcpy(running_proc->state, "Running");
@@ -186,7 +195,6 @@ void SRTN() {
                     strcpy(running_proc->state, "Stopped");
                     displayProcess(running_proc);
                 }
-                if(!peak(ready_queue)) printf("2f4tak\n");
                 runPeak();
             }
         }
@@ -194,10 +202,19 @@ void SRTN() {
 }
 
 void writetoOutput(Process* p, char* str) {
-    char Text[150];
-    sprintf(Text, "At Time %d process %d %s arr %d total %d remaining %d wait %d  \n", getClk(), p->id, str, running_proc->arrival, running_proc->runtime,
-    p->remainingTime, getClk() - (p->arrival) - (p->runtime) + (p->remainingTime));
-    WriteToFile(Text,"scheduler.log");
+    int clk = getClk();
+    int curWaiting = clk - (p->arrival) - (p->runtime) + (p->remainingTime);
+    p->WaitingTime = curWaiting;
+    int pid = fork();
+    if(pid == 0) {
+        down(sem);
+        char Text[150];
+        sprintf(Text, "At Time %d process %d %s arr %d total %d remaining %d wait %d  \n", clk, p->id, str, running_proc->arrival, running_proc->runtime,
+        p->remainingTime, p->WaitingTime);
+        WriteToFile(Text, log_file);
+        up(sem);
+        exit(0);
+    }
 }
 
 void createProcess(Process* p) {
@@ -220,19 +237,22 @@ void createProcess(Process* p) {
     running_proc->startTime = getClk();
 }
 
-void handler2() {
-    strcpy(running_proc->state, "finished");
-    running_proc->remainingTime = 0;
+void finishProcess() {
     char Text[150];
-    int cur_waiting = getClk() - (running_proc->arrival)-(running_proc->runtime)+(running_proc->remainingTime);
+    int cur_waiting = getClk() - (running_proc->arrival) - (running_proc->runtime) + (running_proc->remainingTime);
     double cur_WTA = (double)(getClk() - running_proc->arrival) / running_proc->runtime;
     WTAs[WTAsIndex++] = cur_WTA;
     TotalWaiting += cur_waiting;
     sprintf(Text, "At Time %d process %d finished arr %d total %d remaining %d wait %d TA %d  WTA %.3f \n", getClk(),  running_proc->id, running_proc->arrival,running_proc-> runtime,
-    running_proc-> remainingTime,cur_waiting,
-    getClk() - running_proc->arrival, cur_WTA);
-    WriteToFile(Text, "scheduler.log");
+    running_proc-> remainingTime, cur_waiting, getClk() - running_proc->arrival, cur_WTA);
+    running_proc->WaitingTime = cur_waiting;
+    WriteToFile(Text, log_file);
+}
 
+void handler2() {
+    strcpy(running_proc->state, "finished");
+    running_proc->remainingTime = 0;
+    finishProcess();
     displayProcess(running_proc);
     if(algo == 1) deleteCurrent(ready_queue);
     if(algo == 2) pop(ready_queue, prio_flag);
@@ -240,7 +260,7 @@ void handler2() {
 }
 
 Process* stringtoProcess(char* str) {
-    Process* p = (Process*)malloc(sizeof(Process));
+    Process* p = malloc(sizeof(Process));
     sscanf(str, "%d %d %d %d %d %d %d %s", &p->id, &p->arrival, &p->startTime, &p->runtime, &p->priority, &p->WaitingTime, &p->remainingTime, p->state);
     return p;
 }
@@ -298,9 +318,11 @@ void clearIpcs() {
         perror("shmctl");
         exit(EXIT_FAILURE);
     }
+    dis_sem(sem);
     exit(0);
 }
-void FinishStat()
+
+void finishStat()
 {
     int currentTime = getClk();
     double TotalWTA = 0;
@@ -312,14 +334,15 @@ void FinishStat()
     double AvgWTA = TotalWTA / numProcesses;
 
     for(int i = 0; i < numProcesses; i++)
-        StdWTA += pow(WTAs[i] - AvgWTA, 2);
+        StdWTA += (WTAs[i] - AvgWTA) *  (WTAs[i] - AvgWTA);
 
-    StdWTA = pow(StdWTA / (numProcesses - 1), 0.5);
+    StdWTA = sqrt(StdWTA / numProcesses);
 
     char Text[150];
     sprintf(Text, "CPU utilization = %.2f %% \nAvg WTA = %.2f \nAvg Waiting = %.2f \nStd WTA = %.2f",
      (TotalRunTime / (double)(currentTime - FirstArrival)) * 100, AvgWTA, (double)TotalWaiting / numProcesses, StdWTA);
-
-    WriteToFile(Text, "scheduler.perf");
+    
+    stat_file = openFile("scheduler.perf");
+    WriteToFile(Text, stat_file);
     free(WTAs);
 }

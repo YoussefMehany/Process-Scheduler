@@ -18,8 +18,8 @@ int main(int agrc, char * argv[])
 
     int remainingtime = atoi(argv[1]);
     currentTime = getClk();
-
     *shared_memory = remainingtime;
+
     while (remainingtime > 0) {
         int time = getClk();
         if(time > currentTime) {

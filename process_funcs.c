@@ -16,9 +16,8 @@ void displayProcess(const struct Process *p) {
     printf("State: %s\n", p->state);
     fflush(stdout);
 }
-int GetNumProcesses (char *filename)
+int GetNumProcesses(char *filename)
 {
-
     FILE* file = fopen(filename,"r");;
     char line[100];
     int numProcesses = -1;
@@ -50,30 +49,29 @@ void readProcessesFromFile(char *filename, struct Process **processes) {
         int id, arrival, runtime, priority;
         sscanf(line, "%d %d %d %d", &id, &arrival, &runtime, &priority);
         processes[index] = malloc(sizeof(struct Process));
-        initProcess(processes[index], id, arrival,0, runtime, priority, 0, runtime, "waiting");
+        initProcess(processes[index], id, arrival, 0, runtime, priority, 0, runtime, "waiting");
         index++;
     }
 
     fclose(file);
 }
-void WriteToFile(char text[], char filename[])
-{
-    FILE *outfile;
-    outfile = fopen(filename, "a");
 
-    if (outfile != NULL) {
-        fprintf(outfile, "%s\n", text);
-        fclose(outfile);
+FILE* openFile(char filename[]) {
+    FILE* outfile;
+    outfile = fopen(filename, "w");
+    return outfile;
+}
+
+
+void WriteToFile(char text[], FILE* file)
+{
+    if (file != NULL) {
+        fprintf(file, "%s\n", text);
+        fflush(file);
     }
 }
 
-void Clear_File(char filename[]){
-     FILE *file = fopen(filename, "a");
-    if (file == NULL) {
-        perror("Error opening file");
-        return;
-    }
-    truncate(filename, 0);
 
+void closeFile(FILE* file) {
     fclose(file);
 }

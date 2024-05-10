@@ -1,6 +1,20 @@
-At Time 1 process 1 Started arr 1 total 1 remaining 1 wait 0  
+At Time 1 process 1 Started arr 1 total 12 remaining 12 wait 0  
 
-At Time 2 process 5 finished arr 548212480 total 1 remaining 0 wait -548212479 TA -548212478  WTA -548212478.000 
+At Time 13 process 1 finished arr 1 total 12 remaining 0 wait 0 TA 12  WTA 1.000 
 
-At Time 2 process -548212478 Started arr 548212480 total 1 remaining 32534 wait -548179945  
+At Time 13 process 2 Started arr 10 total 4 remaining 4 wait 3  
+
+At Time 17 process 2 finished arr 10 total 4 remaining 0 wait 3 TA 7  WTA 1.750 
+
+At Time 20 process 3 Started arr 20 total 7 remaining 7 wait 0  
+
+At Time 27 process 3 finished arr 20 total 7 remaining 0 wait 0 TA 7  WTA 1.000 
+
+At Time 27 process 4 Started arr 23 total 5 remaining 5 wait 4  
+
+At Time 32 process 4 finished arr 23 total 5 remaining 0 wait 4 TA 9  WTA 1.800 
+
+At Time 34 process 5 Started arr 34 total 3 remaining 3 wait 0  
+
+At Time 37 process 5 finished arr 34 total 3 remaining 0 wait 0 TA 3  WTA 1.000 
 

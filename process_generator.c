@@ -24,7 +24,7 @@ struct finish_message_pg {
 
 struct msgbuf {
     long mtype;
-    char mtext[30];
+    char mtext[100];
 };
 
 void clearResources();
@@ -44,12 +44,11 @@ int main(int argc, char * argv[])
     numProcesses = GetNumProcesses(str);
     int waitSend = 1;
 
-    Process** processes = malloc(numProcesses * sizeof(struct Process));
+    Process** processes = malloc(numProcesses * sizeof(Process*));
     readProcessesFromFile(str, processes);
 
     initiateClkProcess();
     initiateScheduler(algo, quantum);
-    
     initClk();
     while(waitSend) {
         int currentTime = getClk();
@@ -150,7 +149,6 @@ void sendProcess(Process *process) {
         perror("msgrec");
         exit(EXIT_FAILURE);
     }
-    free(processStr);
 }
 
 
